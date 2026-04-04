@@ -4,6 +4,7 @@ import { GoogleLogin } from "@react-oauth/google";
 import { jwtDecode } from "jwt-decode";
 import ParticleBackground from "@/components/ParticleBackground";
 import roninLogo from "@/assets/logo_ronin.png";
+import { createUser } from "@/lib/firebase-db";
 
 interface GoogleUser {
   name: string;
@@ -23,7 +24,7 @@ const Login = () => {
     navigate("/home");
   };
 
-  const handleGoogleSuccess = (credentialResponse: any) => {
+  const handleGoogleSuccess = async (credentialResponse: any) => {
     try {
       setIsGoogleLoading(true);
       
@@ -42,6 +43,21 @@ const Login = () => {
       
       // Save to localStorage
       localStorage.setItem('user', JSON.stringify(userData));
+      
+      // Save to Firebase Realtime Database
+      try {
+        await createUser(decoded.sub, {
+          name: decoded.name,
+          email: decoded.email,
+          picture: decoded.picture,
+          googleId: decoded.sub,
+          loginMethod: 'google'
+        });
+        console.log("User data saved to Firebase successfully");
+      } catch (firebaseError) {
+        console.error("Error saving to Firebase:", firebaseError);
+        // Continue even if Firebase save fails - user can still login
+      }
       
       // Populate form fields with Google data
       setEmail(decoded.email);
