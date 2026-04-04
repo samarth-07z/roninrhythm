@@ -1,8 +1,10 @@
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
+import QRCode from "qrcode.react";
 import ParticleBackground from "@/components/ParticleBackground";
 import roninLogo from "@/assets/logo_ronin.png";
 import { getUser } from "@/lib/userService";
+import { generateQRCodeData } from "@/lib/qrCodeUtils";
 
 interface UserData {
   name: string;
@@ -48,6 +50,17 @@ const Pass = () => {
 
     loadUserData();
   }, [navigate]);
+
+  const downloadQRCode = () => {
+    const canvas = document.querySelector("canvas");
+    if (canvas) {
+      const url = canvas.toDataURL("image/png");
+      const link = document.createElement("a");
+      link.href = url;
+      link.download = `${userData?.id}-pass.png`;
+      link.click();
+    }
+  };
 
   if (isLoading) {
     return (
@@ -140,15 +153,29 @@ const Pass = () => {
                 {userData.id}
               </p>
 
-              {/* QR Placeholder - You can integrate actual QR generation */}
+              {/* QR Code - Generated from user data */}
               <div className="mt-6 flex justify-center">
                 <div
-                  className="w-32 h-32 rounded-lg border-2 border-purple-500 flex items-center justify-center"
+                  className="w-40 h-40 rounded-lg border-2 border-purple-500 flex items-center justify-center p-2"
                   style={{
-                    background: "rgba(255, 255, 255, 0.05)",
+                    background: "rgba(255, 255, 255, 0.95)",
                   }}
                 >
-                  <img src="/assets/qr.png" alt="QR Code" className="w-full h-full object-cover rounded" />
+                  {userData && (
+                    <QRCode
+                      value={generateQRCodeData(
+                        userData.id,
+                        userData.name,
+                        userData.email,
+                        userData.phone
+                      )}
+                      size={144}
+                      level="H"
+                      includeMargin={false}
+                      bgColor="#ffffff"
+                      fgColor="#000000"
+                    />
+                  )}
                 </div>
               </div>
             </div>
@@ -188,6 +215,20 @@ const Pass = () => {
               }}
             >
               Enter The Arena
+            </button>
+
+            <button
+              onClick={downloadQRCode}
+              className="w-full py-3 font-exo text-base tracking-wider text-primary-foreground uppercase rounded-xl transition-all duration-300 hover:scale-105 active:scale-95"
+              style={{
+                background: "rgba(34, 197, 94, 0.25)",
+                backdropFilter: "blur(20px)",
+                border: "1.5px solid hsl(142 71% 45% / 0.6)",
+                boxShadow:
+                  "0 0 30px hsl(142 71% 45% / 0.5), 0 0 60px hsl(142 71% 45% / 0.35), inset 0 0 30px hsl(142 71% 60% / 0.15)",
+              }}
+            >
+              Download QR Code 📥
             </button>
           </div>
         </div>

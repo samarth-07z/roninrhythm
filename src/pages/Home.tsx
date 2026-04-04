@@ -89,16 +89,16 @@ const Home = () => {
                 onClick={() => navigate("/pass")}
                 className="px-12 py-4 rounded-3xl font-exo text-base md:text-lg tracking-wider text-primary-foreground uppercase transition-all duration-300 hover:scale-105 active:scale-95"
                 style={{
-                  background: "rgba(34, 197, 94, 0.25)",
+                  background: "rgba(180, 80, 255, 0.25)",
                   backdropFilter: "blur(20px)",
-                  border: "1.5px solid hsl(142 71% 45% / 0.6)",
-                  boxShadow: "0 0 30px hsl(142 71% 45% / 0.5), 0 0 60px hsl(142 71% 45% / 0.35), inset 0 0 30px hsl(142 71% 60% / 0.15), 0 15px 45px hsl(142 71% 45% / 0.25)"
+                  border: "1.5px solid hsl(270 100% 60% / 0.6)",
+                  boxShadow: "0 0 30px hsl(270 100% 60% / 0.5), 0 0 60px hsl(270 100% 60% / 0.35), inset 0 0 30px hsl(270 100% 80% / 0.15), 0 15px 45px hsl(270 100% 60% / 0.25)"
                 }}
                 onMouseEnter={(e) => {
-                  e.currentTarget.style.boxShadow = "0 0 50px hsl(142 71% 45% / 0.7), 0 0 100px hsl(142 71% 45% / 0.4), inset 0 0 40px hsl(142 71% 60% / 0.2), 0 20px 60px hsl(142 71% 45% / 0.35)";
+                  e.currentTarget.style.boxShadow = "0 0 50px hsl(270 100% 60% / 0.7), 0 0 100px hsl(270 100% 60% / 0.4), inset 0 0 40px hsl(270 100% 80% / 0.2), 0 20px 60px hsl(270 100% 60% / 0.35)";
                 }}
                 onMouseLeave={(e) => {
-                  e.currentTarget.style.boxShadow = "0 0 30px hsl(142 71% 45% / 0.5), 0 0 60px hsl(142 71% 45% / 0.35), inset 0 0 30px hsl(142 71% 60% / 0.15), 0 15px 45px hsl(142 71% 45% / 0.25)";
+                  e.currentTarget.style.boxShadow = "0 0 30px hsl(270 100% 60% / 0.5), 0 0 60px hsl(270 100% 60% / 0.35), inset 0 0 30px hsl(270 100% 80% / 0.15), 0 15px 45px hsl(270 100% 60% / 0.25)";
                 }}
               >
                 View Your Pass 🎟️
