@@ -1,0 +1,127 @@
+.lanyard-wrapper {
+  position: relative;
+  z-index: 10;
+  width: 100%;
+  height: 40vh;
+  display: flex;
+  justify-content: center;
+  align-items: flex-start;
+  padding-top: 30px;
+  background: radial-gradient(circle at center top, rgba(139, 92, 246, 0.05), transparent 60%);
+}
+
+.lanyard-container {
+  position: relative;
+  width: 300px;
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  perspective: 1000px;
+}
+
+.lanyard-string {
+  position: absolute;
+  background: linear-gradient(180deg, rgba(200, 150, 255, 1), rgba(139, 92, 246, 0.6));
+  width: 4px;
+  height: 180px;
+  border-radius: 2px;
+  top: 0;
+  box-shadow: 0 0 15px rgba(139, 92, 246, 0.6), 0 0 30px rgba(139, 92, 246, 0.3);
+}
+
+.lanyard-string-left {
+  left: 35%;
+  animation: sway-left 3.5s ease-in-out infinite;
+  transform-origin: top;
+}
+
+.lanyard-string-right {
+  right: 35%;
+  animation: sway-right 3.5s ease-in-out infinite;
+  transform-origin: top;
+}
+
+.lanyard-card {
+  position: absolute;
+  width: 220px;
+  height: 280px;
+  top: 170px;
+  background: linear-gradient(135deg, rgba(139, 92, 246, 0.15), rgba(168, 85, 247, 0.08));
+  border: 2px solid rgba(139, 92, 246, 0.5);
+  border-radius: 24px;
+  box-shadow: 
+    0 0 40px rgba(139, 92, 246, 0.4),
+    0 20px 60px rgba(139, 92, 246, 0.25),
+    inset 0 0 30px rgba(200, 150, 255, 0.15);
+  backdrop-filter: blur(12px);
+  overflow: hidden;
+  cursor: grab;
+  transition: all 0.3s ease;
+  user-select: none;
+}
+
+.lanyard-card:hover {
+  transform: translateY(-10px) scale(1.02);
+  box-shadow: 
+    0 0 60px rgba(139, 92, 246, 0.6),
+    0 30px 80px rgba(139, 92, 246, 0.35),
+    inset 0 0 40px rgba(200, 150, 255, 0.2);
+  border-color: rgba(139, 92, 246, 0.8);
+}
+
+.lanyard-card:active {
+  cursor: grabbing;
+}
+
+.lanyard-card-glow {
+  position: absolute;
+  inset: 0;
+  background: radial-gradient(circle at center, rgba(139, 92, 246, 0.2), transparent 70%);
+  pointer-events: none;
+  border-radius: 24px;
+}
+
+@keyframes sway-left {
+  0%, 100% { transform: translateX(0px) rotateZ(0deg); }
+  25% { transform: translateX(-8px) rotateZ(-2deg); }
+  50% { transform: translateX(0px) rotateZ(0deg); }
+  75% { transform: translateX(8px) rotateZ(2deg); }
+}
+
+@keyframes sway-right {
+  0%, 100% { transform: translateX(0px) rotateZ(0deg); }
+  25% { transform: translateX(8px) rotateZ(2deg); }
+  50% { transform: translateX(0px) rotateZ(0deg); }
+  75% { transform: translateX(-8px) rotateZ(-2deg); }
+}
+
+@keyframes sway-card {
+  0%, 100% { transform: rotateZ(0deg) rotateX(0deg) translateY(0px); }
+  25% { transform: rotateZ(-3deg) rotateX(-2deg) translateY(-5px); }
+  50% { transform: rotateZ(0deg) rotateX(0deg) translateY(0px); }
+  75% { transform: rotateZ(3deg) rotateX(2deg) translateY(5px); }
+}
+
+.animate-sway-card {
+  animation: sway-card 4s ease-in-out infinite;
+}
+
+@media (max-width: 768px) {
+  .lanyard-wrapper {
+    height: 35vh;
+    padding-top: 20px;
+  }
+
+  .lanyard-card {
+    width: 160px;
+    height: 210px;
+    top: 140px;
+  }
+
+  .lanyard-string {
+    height: 140px;
+  }
+}
+
+
