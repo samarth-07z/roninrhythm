@@ -1,6 +1,7 @@
 import { useRef, useCallback } from "react";
 import { QRCodeSVG } from "qrcode.react";
 import { toPng } from "html-to-image";
+import roninLogo from "@/assets/logo_ronin.png";
 
 interface EventPassProps {
   name: string;
