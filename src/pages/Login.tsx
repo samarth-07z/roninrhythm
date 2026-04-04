@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import ParticleBackground from "@/components/ParticleBackground";
+import roninLogo from "@/assets/logo_ronin.png";
 
 const Login = () => {
   const navigate = useNavigate();
@@ -24,11 +25,7 @@ const Login = () => {
 
       <div className="relative z-10 w-full max-w-md px-4 animate-fade-in-up">
         <div className="text-center mb-8">
-          <p className="text-sm tracking-[0.3em] font-tech mb-2" style={{ color: "hsl(200 100% 60%)" }}>浪人の律動</p>
-          <h1 className="text-5xl md:text-6xl font-display font-black tracking-wider text-chrome leading-tight">
-            RONIN<br />RHYTHM
-          </h1>
-          <p className="mt-2 text-lg font-display tracking-widest text-muted-foreground">The Dance Battle</p>
+          <img src={roninLogo} alt="Ronin Rhythm - The Dance Battle" className="w-64 md:w-80 mx-auto drop-shadow-[0_0_30px_hsl(270_100%_60%/0.5)]" />
         </div>
 
         <form onSubmit={handleLogin} className="glass-panel rounded-2xl p-8 space-y-5">

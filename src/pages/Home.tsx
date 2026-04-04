@@ -1,6 +1,7 @@
 import { useNavigate } from "react-router-dom";
 import ParticleBackground from "@/components/ParticleBackground";
 import poster from "@/assets/poster.png";
+import roninLogo from "@/assets/logo_ronin.png";
 
 const Home = () => {
   const navigate = useNavigate();
@@ -21,13 +22,7 @@ const Home = () => {
           style={{ background: "radial-gradient(circle, hsl(270 100% 60%), hsl(280 80% 30%) 40%, transparent 70%)" }} />
 
         <div className="relative z-10 animate-fade-in-up">
-          <p className="text-sm tracking-[0.4em] font-tech mb-3" style={{ color: "hsl(200 100% 60%)" }}>浪人の律動</p>
-          <h1 className="text-6xl md:text-8xl font-display font-black tracking-wider text-chrome leading-[0.9]">
-            RONIN<br />RHYTHM
-          </h1>
-          <p className="mt-4 text-xl md:text-2xl font-display tracking-[0.3em] text-foreground/80" style={{ animationDelay: "0.2s" }}>
-            The Dance Battle
-          </p>
+          <img src={roninLogo} alt="Ronin Rhythm - The Dance Battle" className="w-80 md:w-[28rem] mx-auto drop-shadow-[0_0_40px_hsl(270_100%_60%/0.5)]" />
 
           <div className="mt-8 h-px w-48 mx-auto" style={{ background: "linear-gradient(90deg, transparent, hsl(270 100% 60%), transparent)" }} />
 

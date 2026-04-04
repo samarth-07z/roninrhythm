@@ -1,6 +1,7 @@
 import { useRef, useCallback } from "react";
 import { QRCodeSVG } from "qrcode.react";
 import { toPng } from "html-to-image";
+import roninLogo from "@/assets/logo_ronin.png";
 
 interface EventPassProps {
   name: string;
@@ -47,14 +48,8 @@ const EventPass = ({ name, uniqueId, onClose }: EventPassProps) => {
           <div className="absolute inset-0 opacity-20"
             style={{ background: "radial-gradient(circle at 30% 20%, hsl(270 100% 60% / 0.4), transparent 60%), radial-gradient(circle at 70% 80%, hsl(280 100% 60% / 0.3), transparent 50%)" }}
           />
-          <div className="absolute top-3 left-0 right-0 text-center">
-            <span className="text-xs tracking-[0.3em] font-tech" style={{ color: "hsl(200 100% 60%)" }}>浪人の律動</span>
-          </div>
-
-          <div className="relative z-10 text-center pt-4">
-            <h2 className="text-4xl font-display font-black tracking-wider text-chrome leading-tight">
-              RONIN<br />RHYTHM
-            </h2>
+          <div className="relative z-10 text-center pt-2">
+            <img src={roninLogo} alt="Ronin Rhythm" className="w-48 mx-auto drop-shadow-[0_0_20px_hsl(270_100%_60%/0.5)]" />
 
             <div className="my-6">
               <div className="h-px w-full" style={{ background: "linear-gradient(90deg, transparent, hsl(270 100% 60%), transparent)" }} />
