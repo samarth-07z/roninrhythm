@@ -1,6 +1,7 @@
 import { useState } from "react";
 import ParticleBackground from "@/components/ParticleBackground";
 import EventPass from "@/components/EventPass";
+import roninLogo from "@/assets/logo_ronin.png";
 
 const getNextId = (): string => {
   const stored = localStorage.getItem("ronin_counter");
