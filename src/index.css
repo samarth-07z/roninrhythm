@@ -11,42 +11,28 @@
   font-style: italic;
 }
 
-.qr-responsive {
-  @apply p-2 bg-white/95 rounded-lg max-w-[120px] xs:max-w-[140px] sm:max-w-[160px] mx-auto;
-}
-
 @layer base {
   :root {
     --background: 270 100% 3%;
     --foreground: 270 30% 95%;
-
     --card: 270 50% 8%;
     --card-foreground: 270 30% 95%;
-
     --popover: 270 50% 8%;
     --popover-foreground: 270 30% 95%;
-
     --primary: 270 100% 60%;
     --primary-foreground: 0 0% 100%;
-
     --secondary: 270 40% 15%;
     --secondary-foreground: 270 30% 95%;
-
     --muted: 270 30% 12%;
     --muted-foreground: 270 20% 60%;
-
     --accent: 270 100% 70%;
     --accent-foreground: 0 0% 100%;
-
     --destructive: 0 84.2% 60.2%;
     --destructive-foreground: 210 40% 98%;
-
     --border: 270 50% 20%;
     --input: 270 50% 15%;
     --ring: 270 100% 60%;
-
     --radius: 0.5rem;
-
     --neon-purple: 270 100% 60%;
     --neon-violet: 280 100% 70%;
     --neon-blue: 200 100% 60%;
@@ -74,6 +60,10 @@
 }
 
 @layer utilities {
+  .qr-responsive {
+    @apply p-2 bg-white/95 rounded-lg max-w-[120px] sm:max-w-[140px] lg:max-w-[160px] mx-auto;
+  }
+
   .font-display {
     font-family: 'Cinzel', serif;
   }
@@ -168,3 +158,4 @@
   96% { opacity: 0.9; }
   97% { opacity: 1; }
 }
+
