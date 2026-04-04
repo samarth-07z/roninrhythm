@@ -65,8 +65,8 @@ const Register = () => {
   const fields = [
     { key: "name", label: "FULL NAME", type: "text", placeholder: "your warrior name", disabled: true },
     { key: "email", label: "EMAIL", type: "email", placeholder: "your@email.com", disabled: true },
-    { key: "phone", label: "PHONE NUMBER", type: "tel", placeholder: "+91 XXXXXXXXXX" },
-    { key: "danceStyle", label: "DANCE STYLE", type: "text", placeholder: "hip-hop, breaking, freestyle..." },
+    { key: "phone", label: "PHONE NUMBER", type: "tel", placeholder: "+91 XXXXXXXXXX", disabled: false },
+    { key: "danceStyle", label: "DANCE STYLE", type: "text", placeholder: "hip-hop, breaking, freestyle...", disabled: false },
   ] as const;
 
   return (

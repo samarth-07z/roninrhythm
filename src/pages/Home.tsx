@@ -1,5 +1,5 @@
-import { useNavigate, useEffect } from "react-router-dom";
-import { useState } from "react";
+import { useNavigate } from "react-router-dom";
+import { useEffect, useState } from "react";
 import ParticleBackground from "@/components/ParticleBackground";
 import poster from "@/assets/poster.png";
 import roninLogo from "@/assets/logo_ronin.png";
