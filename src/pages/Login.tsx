@@ -35,8 +35,8 @@ const Login = () => {
 
       // Redirect based on registration status
       if (userData.phone && userData.danceStyle) {
-        // User has completed registration - go to pass page
-        navigate("/pass");
+        // User has completed registration - go to home
+        navigate("/home");
       } else {
         // New user or incomplete registration - go to register page
         navigate("/register");

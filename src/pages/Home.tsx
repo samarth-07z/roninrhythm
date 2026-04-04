@@ -1,10 +1,29 @@
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useEffect } from "react-router-dom";
+import { useState } from "react";
 import ParticleBackground from "@/components/ParticleBackground";
 import poster from "@/assets/poster.png";
 import roninLogo from "@/assets/logo_ronin.png";
 
+interface UserData {
+  name: string;
+  picture: string;
+  id: string;
+  phone?: string;
+  danceStyle?: string;
+}
+
 const Home = () => {
   const navigate = useNavigate();
+  const [user, setUser] = useState<UserData | null>(null);
+
+  useEffect(() => {
+    const userData = localStorage.getItem("user");
+    if (userData) {
+      setUser(JSON.parse(userData));
+    }
+  }, []);
+
+  const isRegistered = user?.phone && user?.danceStyle;
 
   return (
     <div className="relative min-h-screen overflow-hidden">
@@ -43,25 +62,57 @@ const Home = () => {
             </p>
           </div>
 
-          {/* CTA Button */}
-          <button
-            onClick={() => navigate("/register")}
-            className="mt-14 px-12 py-4 rounded-3xl font-exo text-base md:text-lg tracking-wider text-primary-foreground uppercase transition-all duration-300 hover:scale-105 active:scale-95"
-            style={{
-              background: "rgba(180, 80, 255, 0.25)",
-              backdropFilter: "blur(20px)",
-              border: "1.5px solid hsl(270 100% 60% / 0.6)",
-              boxShadow: "0 0 30px hsl(270 100% 60% / 0.5), 0 0 60px hsl(270 100% 60% / 0.35), inset 0 0 30px hsl(270 100% 80% / 0.15), 0 15px 45px hsl(270 100% 60% / 0.25)"
-            }}
-            onMouseEnter={(e) => {
-              e.currentTarget.style.boxShadow = "0 0 50px hsl(270 100% 60% / 0.7), 0 0 100px hsl(270 100% 60% / 0.4), inset 0 0 40px hsl(270 100% 80% / 0.2), 0 20px 60px hsl(270 100% 60% / 0.35)";
-            }}
-            onMouseLeave={(e) => {
-              e.currentTarget.style.boxShadow = "0 0 30px hsl(270 100% 60% / 0.5), 0 0 60px hsl(270 100% 60% / 0.35), inset 0 0 30px hsl(270 100% 80% / 0.15), 0 15px 45px hsl(270 100% 60% / 0.25)";
-            }}
-          >
-            Prove Your Groove
-          </button>
+          {/* CTA Buttons */}
+          <div className="mt-14 flex flex-col gap-4 items-center">
+            <button
+              onClick={() => navigate("/register")}
+              className="px-12 py-4 rounded-3xl font-exo text-base md:text-lg tracking-wider text-primary-foreground uppercase transition-all duration-300 hover:scale-105 active:scale-95"
+              style={{
+                background: "rgba(180, 80, 255, 0.25)",
+                backdropFilter: "blur(20px)",
+                border: "1.5px solid hsl(270 100% 60% / 0.6)",
+                boxShadow: "0 0 30px hsl(270 100% 60% / 0.5), 0 0 60px hsl(270 100% 60% / 0.35), inset 0 0 30px hsl(270 100% 80% / 0.15), 0 15px 45px hsl(270 100% 60% / 0.25)"
+              }}
+              onMouseEnter={(e) => {
+                e.currentTarget.style.boxShadow = "0 0 50px hsl(270 100% 60% / 0.7), 0 0 100px hsl(270 100% 60% / 0.4), inset 0 0 40px hsl(270 100% 80% / 0.2), 0 20px 60px hsl(270 100% 60% / 0.35)";
+              }}
+              onMouseLeave={(e) => {
+                e.currentTarget.style.boxShadow = "0 0 30px hsl(270 100% 60% / 0.5), 0 0 60px hsl(270 100% 60% / 0.35), inset 0 0 30px hsl(270 100% 80% / 0.15), 0 15px 45px hsl(270 100% 60% / 0.25)";
+              }}
+            >
+              Prove Your Groove
+            </button>
+
+            {/* View Pass Button - Only show if user is registered */}
+            {isRegistered && (
+              <button
+                onClick={() => navigate("/pass")}
+                className="px-12 py-4 rounded-3xl font-exo text-base md:text-lg tracking-wider text-primary-foreground uppercase transition-all duration-300 hover:scale-105 active:scale-95"
+                style={{
+                  background: "rgba(34, 197, 94, 0.25)",
+                  backdropFilter: "blur(20px)",
+                  border: "1.5px solid hsl(142 71% 45% / 0.6)",
+                  boxShadow: "0 0 30px hsl(142 71% 45% / 0.5), 0 0 60px hsl(142 71% 45% / 0.35), inset 0 0 30px hsl(142 71% 60% / 0.15), 0 15px 45px hsl(142 71% 45% / 0.25)"
+                }}
+                onMouseEnter={(e) => {
+                  e.currentTarget.style.boxShadow = "0 0 50px hsl(142 71% 45% / 0.7), 0 0 100px hsl(142 71% 45% / 0.4), inset 0 0 40px hsl(142 71% 60% / 0.2), 0 20px 60px hsl(142 71% 45% / 0.35)";
+                }}
+                onMouseLeave={(e) => {
+                  e.currentTarget.style.boxShadow = "0 0 30px hsl(142 71% 45% / 0.5), 0 0 60px hsl(142 71% 45% / 0.35), inset 0 0 30px hsl(142 71% 60% / 0.15), 0 15px 45px hsl(142 71% 45% / 0.25)";
+                }}
+              >
+                View Your Pass 🎟️
+              </button>
+            )}
+          </div>
+
+          {/* User Info */}
+          {user && (
+            <div className="mt-8 text-center">
+              <p className="text-sm font-exo tracking-wide text-muted-foreground">Welcome,</p>
+              <p className="text-lg font-exo tracking-wide text-chrome">{user.name}</p>
+            </div>
+          )}
         </div>
       </section>
 
