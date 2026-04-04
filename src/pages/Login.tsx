@@ -1,84 +1,52 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { GoogleLogin } from "@react-oauth/google";
-import { jwtDecode } from "jwt-decode";
 import ParticleBackground from "@/components/ParticleBackground";
 import roninLogo from "@/assets/logo_ronin.png";
-import { createUser } from "@/lib/firebase-db";
-
-interface GoogleUser {
-  name: string;
-  email: string;
-  picture: string;
-  sub: string;
-}
+import { loginWithGoogle } from "@/lib/auth";
+import { handleUser } from "@/lib/userService";
 
 const Login = () => {
   const navigate = useNavigate();
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
-  const [isGoogleLoading, setIsGoogleLoading] = useState(false);
+  const [isLoading, setIsLoading] = useState(false);
+  const [error, setError] = useState("");
 
   const handleLogin = (e: React.FormEvent) => {
     e.preventDefault();
     navigate("/home");
   };
 
-  const handleGoogleSuccess = async (credentialResponse: any) => {
+  const handleGoogleLogin = async () => {
     try {
-      setIsGoogleLoading(true);
-      
-      // Decode the JWT token to get user information
-      const decoded = jwtDecode<GoogleUser>(credentialResponse.credential);
-      
-      // Store user information
-      const userData = {
-        name: decoded.name,
-        email: decoded.email,
-        picture: decoded.picture,
-        googleId: decoded.sub,
-        loginMethod: 'google',
-        loginTime: new Date().toISOString()
-      };
-      
-      // Save to localStorage
-      localStorage.setItem('user', JSON.stringify(userData));
-      
-      // Save to Firebase Realtime Database
-      try {
-        await createUser(decoded.sub, {
-          name: decoded.name,
-          email: decoded.email,
-          picture: decoded.picture,
-          googleId: decoded.sub,
-          loginMethod: 'google'
-        });
-        console.log("User data saved to Firebase successfully");
-      } catch (firebaseError) {
-        console.error("Error saving to Firebase:", firebaseError);
-        // Continue even if Firebase save fails - user can still login
-      }
-      
-      // Populate form fields with Google data
-      setEmail(decoded.email);
-      
-      // Navigate to home after a short delay
-      setTimeout(() => {
-        navigate("/home");
-      }, 500);
-      
-      console.log("User logged in:", userData);
-    } catch (error) {
-      console.error("Error decoding Google token:", error);
-      alert("Error during authentication. Please try again.");
-    } finally {
-      setIsGoogleLoading(false);
-    }
-  };
+      setIsLoading(true);
+      setError("");
 
-  const handleGoogleError = () => {
-    console.log("Login Failed");
-    alert("Google login failed. Please try again.");
+      // Sign in with Google
+      const googleUser = await loginWithGoogle();
+      console.log("Google user:", googleUser);
+
+      // Handle user in Realtime DB
+      const userData = await handleUser(googleUser);
+      console.log("User data:", userData);
+
+      // Save to localStorage
+      localStorage.setItem("user", JSON.stringify(userData));
+
+      // Redirect based on registration status
+      if (userData.phone && userData.danceStyle) {
+        // User has completed registration - go to pass page
+        navigate("/pass");
+      } else {
+        // New user or incomplete registration - go to register page
+        navigate("/register");
+      }
+    } catch (err: any) {
+      console.error("Login error:", err);
+      setError("Login failed. Please try again.");
+    } finally {
+      setIsLoading(false);
+    }
   };
 
   return (
@@ -86,19 +54,34 @@ const Login = () => {
       <ParticleBackground />
 
       {/* Cosmic glow orbs */}
-      <div className="absolute top-1/4 left-1/4 w-96 h-96 rounded-full opacity-20 animate-pulse-glow"
-        style={{ background: "radial-gradient(circle, hsl(270 100% 60%), transparent 70%)" }} />
-      <div className="absolute bottom-1/4 right-1/4 w-64 h-64 rounded-full opacity-15 animate-pulse-glow"
-        style={{ background: "radial-gradient(circle, hsl(280 100% 70%), transparent 70%)", animationDelay: "1.5s" }} />
+      <div
+        className="absolute top-1/4 left-1/4 w-96 h-96 rounded-full opacity-20 animate-pulse-glow"
+        style={{
+          background: "radial-gradient(circle, hsl(270 100% 60%), transparent 70%)",
+        }}
+      />
+      <div
+        className="absolute bottom-1/4 right-1/4 w-64 h-64 rounded-full opacity-15 animate-pulse-glow"
+        style={{
+          background: "radial-gradient(circle, hsl(280 100% 70%), transparent 70%)",
+          animationDelay: "1.5s",
+        }}
+      />
 
       <div className="relative z-10 w-full max-w-md px-4 animate-fade-in-up -translate-y-20">
         <div className="text-center mb-8">
-          <img src={roninLogo} alt="Ronin Rhythm - The Dance Battle" className="w-80 md:w-96 mx-auto drop-shadow-[0_0_30px_hsl(270_100%_60%/0.5)]" />
+          <img
+            src={roninLogo}
+            alt="Ronin Rhythm - The Dance Battle"
+            className="w-80 md:w-96 mx-auto drop-shadow-[0_0_30px_hsl(270_100%_60%/0.5)]"
+          />
         </div>
 
         <form onSubmit={handleLogin} className="glass-panel rounded-2xl p-8 space-y-5">
           <div>
-            <label className="block text-xs font-exo tracking-wider text-muted-foreground mb-2">USERNAME / EMAIL</label>
+            <label className="block text-xs font-exo tracking-wider text-muted-foreground mb-2">
+              USERNAME / EMAIL
+            </label>
             <input
               type="text"
               value={email}
@@ -109,7 +92,9 @@ const Login = () => {
           </div>
 
           <div>
-            <label className="block text-xs font-exo tracking-wider text-muted-foreground mb-2">PASSWORD</label>
+            <label className="block text-xs font-exo tracking-wider text-muted-foreground mb-2">
+              PASSWORD
+            </label>
             <input
               type="password"
               value={password}
@@ -119,20 +104,23 @@ const Login = () => {
             />
           </div>
 
-          <button 
-            type="submit" 
+          <button
+            type="submit"
             className="w-full py-4 font-exo text-base tracking-wider text-primary-foreground uppercase mt-4 rounded-2xl transition-all duration-300 hover:scale-105 active:scale-95"
             style={{
               background: "rgba(180, 80, 255, 0.25)",
               backdropFilter: "blur(20px)",
               border: "1.5px solid hsl(270 100% 60% / 0.6)",
-              boxShadow: "0 0 30px hsl(270 100% 60% / 0.5), 0 0 60px hsl(270 100% 60% / 0.35), inset 0 0 30px hsl(270 100% 80% / 0.15), 0 15px 45px hsl(270 100% 60% / 0.25)"
+              boxShadow:
+                "0 0 30px hsl(270 100% 60% / 0.5), 0 0 60px hsl(270 100% 60% / 0.35), inset 0 0 30px hsl(270 100% 80% / 0.15), 0 15px 45px hsl(270 100% 60% / 0.25)",
             }}
             onMouseEnter={(e) => {
-              e.currentTarget.style.boxShadow = "0 0 50px hsl(270 100% 60% / 0.7), 0 0 100px hsl(270 100% 60% / 0.4), inset 0 0 40px hsl(270 100% 80% / 0.2), 0 20px 60px hsl(270 100% 60% / 0.35)";
+              e.currentTarget.style.boxShadow =
+                "0 0 50px hsl(270 100% 60% / 0.7), 0 0 100px hsl(270 100% 60% / 0.4), inset 0 0 40px hsl(270 100% 80% / 0.2), 0 20px 60px hsl(270 100% 60% / 0.35)";
             }}
             onMouseLeave={(e) => {
-              e.currentTarget.style.boxShadow = "0 0 30px hsl(270 100% 60% / 0.5), 0 0 60px hsl(270 100% 60% / 0.35), inset 0 0 30px hsl(270 100% 80% / 0.15), 0 15px 45px hsl(270 100% 60% / 0.25)";
+              e.currentTarget.style.boxShadow =
+                "0 0 30px hsl(270 100% 60% / 0.5), 0 0 60px hsl(270 100% 60% / 0.35), inset 0 0 30px hsl(270 100% 80% / 0.15), 0 15px 45px hsl(270 100% 60% / 0.25)";
             }}
           >
             Enter The Arena
@@ -150,15 +138,32 @@ const Login = () => {
         </div>
 
         {/* Google Login Button */}
-        <div className="flex justify-center">
-          <GoogleLogin
-            onSuccess={handleGoogleSuccess}
-            onError={handleGoogleError}
-            size="large"
-            theme="dark"
-            width="340"
-          />
-        </div>
+        <button
+          onClick={handleGoogleLogin}
+          disabled={isLoading}
+          className="w-full py-4 font-exo text-base tracking-wider text-primary-foreground uppercase rounded-2xl transition-all duration-300 hover:scale-105 active:scale-95 disabled:opacity-50 disabled:cursor-not-allowed"
+          style={{
+            background: "rgba(219, 39, 119, 0.25)",
+            backdropFilter: "blur(20px)",
+            border: "1.5px solid hsl(330 100% 50% / 0.6)",
+            boxShadow:
+              "0 0 30px hsl(330 100% 50% / 0.5), 0 0 60px hsl(330 100% 50% / 0.35), inset 0 0 30px hsl(330 100% 70% / 0.15), 0 15px 45px hsl(330 100% 50% / 0.25)",
+          }}
+          onMouseEnter={(e) => {
+            if (!isLoading) {
+              e.currentTarget.style.boxShadow =
+                "0 0 50px hsl(330 100% 50% / 0.7), 0 0 100px hsl(330 100% 50% / 0.4), inset 0 0 40px hsl(330 100% 70% / 0.2), 0 20px 60px hsl(330 100% 50% / 0.35)";
+            }
+          }}
+          onMouseLeave={(e) => {
+            e.currentTarget.style.boxShadow =
+              "0 0 30px hsl(330 100% 50% / 0.5), 0 0 60px hsl(330 100% 50% / 0.35), inset 0 0 30px hsl(330 100% 70% / 0.15), 0 15px 45px hsl(330 100% 50% / 0.25)";
+          }}
+        >
+          {isLoading ? "Signing In..." : "Sign In With Google"}
+        </button>
+
+        {error && <p className="text-red-400 text-sm mt-3 text-center">{error}</p>}
 
         {/* Sign Up Link */}
         <div className="text-center mt-6">

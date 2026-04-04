@@ -1,10 +1,10 @@
 import { ref, set, get, update, remove, onValue, query, orderByChild, equalTo } from "firebase/database";
-import { database } from "@/config/firebase";
+import { db } from "@/config/firebase";
 
 // User operations
 export const createUser = async (userId: string, userData: any) => {
   try {
-    await set(ref(database, `users/${userId}`), {
+    await set(ref(db, `users/${userId}`), {
       ...userData,
       createdAt: new Date().toISOString(),
     });
@@ -17,7 +17,7 @@ export const createUser = async (userId: string, userData: any) => {
 
 export const getUser = async (userId: string) => {
   try {
-    const snapshot = await get(ref(database, `users/${userId}`));
+    const snapshot = await get(ref(db, `users/${userId}`));
     if (snapshot.exists()) {
       return snapshot.val();
     } else {
@@ -32,7 +32,7 @@ export const getUser = async (userId: string) => {
 
 export const updateUser = async (userId: string, updates: any) => {
   try {
-    await update(ref(database, `users/${userId}`), {
+    await update(ref(db, `users/${userId}`), {
       ...updates,
       updatedAt: new Date().toISOString(),
     });
@@ -45,7 +45,7 @@ export const updateUser = async (userId: string, updates: any) => {
 
 export const deleteUser = async (userId: string) => {
   try {
-    await remove(ref(database, `users/${userId}`));
+    await remove(ref(db, `users/${userId}`));
     console.log("User deleted successfully");
   } catch (error) {
     console.error("Error deleting user:", error);
@@ -57,7 +57,7 @@ export const deleteUser = async (userId: string) => {
 export const saveBattleScore = async (userId: string, battleData: any) => {
   try {
     const battleId = `battle_${Date.now()}`;
-    await set(ref(database, `battles/${userId}/${battleId}`), {
+    await set(ref(db, `battles/${userId}/${battleId}`), {
       ...battleData,
       timestamp: new Date().toISOString(),
     });
@@ -71,7 +71,7 @@ export const saveBattleScore = async (userId: string, battleData: any) => {
 
 export const getUserBattles = async (userId: string) => {
   try {
-    const snapshot = await get(ref(database, `battles/${userId}`));
+    const snapshot = await get(ref(db, `battles/${userId}`));
     if (snapshot.exists()) {
       return snapshot.val();
     } else {
@@ -86,7 +86,7 @@ export const getUserBattles = async (userId: string) => {
 // Leaderboard operations
 export const updateLeaderboard = async (userId: string, score: number, userName: string) => {
   try {
-    await set(ref(database, `leaderboard/${userId}`), {
+    await set(ref(db, `leaderboard/${userId}`), {
       name: userName,
       score: score,
       timestamp: new Date().toISOString(),
@@ -100,7 +100,7 @@ export const updateLeaderboard = async (userId: string, score: number, userName:
 
 export const getLeaderboard = async () => {
   try {
-    const snapshot = await get(ref(database, "leaderboard"));
+    const snapshot = await get(ref(db, "leaderboard"));
     if (snapshot.exists()) {
       return snapshot.val();
     } else {
@@ -114,7 +114,7 @@ export const getLeaderboard = async () => {
 
 // Real-time listener for leaderboard
 export const onLeaderboardChange = (callback: (data: any) => void) => {
-  const leaderboardRef = ref(database, "leaderboard");
+  const leaderboardRef = ref(db, "leaderboard");
   return onValue(leaderboardRef, (snapshot) => {
     if (snapshot.exists()) {
       callback(snapshot.val());
@@ -127,7 +127,7 @@ export const onLeaderboardChange = (callback: (data: any) => void) => {
 // General utility for reading data
 export const readData = async (path: string) => {
   try {
-    const snapshot = await get(ref(database, path));
+    const snapshot = await get(ref(db, path));
     return snapshot.exists() ? snapshot.val() : null;
   } catch (error) {
     console.error(`Error reading data from ${path}:`, error);
@@ -138,7 +138,7 @@ export const readData = async (path: string) => {
 // General utility for writing data
 export const writeData = async (path: string, data: any) => {
   try {
-    await set(ref(database, path), data);
+    await set(ref(db, path), data);
     console.log(`Data written to ${path}`);
   } catch (error) {
     console.error(`Error writing data to ${path}:`, error);
