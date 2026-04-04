@@ -41,10 +41,8 @@ const Register = () => {
 
       <div className="relative z-10 w-full max-w-md px-4 animate-fade-in-up">
         <div className="text-center mb-8">
-          <p className="text-sm tracking-[0.3em] font-tech mb-2" style={{ color: "hsl(200 100% 60%)" }}>浪人の律動</p>
-          <h1 className="text-4xl font-display font-black tracking-wider text-chrome">
-            ARENA ENTRY
-          </h1>
+          <img src={roninLogo} alt="Ronin Rhythm - The Dance Battle" className="w-48 md:w-64 mx-auto mb-4 drop-shadow-[0_0_30px_hsl(270_100%_60%/0.5)]" />
+          <h2 className="text-2xl font-display font-black tracking-wider text-chrome">ARENA ENTRY</h2>
           <p className="mt-2 text-sm font-tech tracking-widest text-muted-foreground">REGISTRATION FORM</p>
         </div>
 
