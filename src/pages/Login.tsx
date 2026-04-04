@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import ParticleBackground from "@/components/ParticleBackground";
+import roninLogo from "@/assets/logo_ronin.png";
 
 const Login = () => {
   const navigate = useNavigate();
