@@ -109,34 +109,34 @@ const Pass = () => {
             alt="Ronin Rhythm"
             className="w-64 mx-auto drop-shadow-[0_0_30px_hsl(270_100%_60%/0.5)]"
           />
-          <h1 className="text-3xl font-exo text-white mt-4">YOUR EVENT PASS</h1>
+          <h1 className="text-2xl md:text-3xl font-exo text-chrome neon-text-glow mt-4 tracking-wider">YOUR EVENT PASS</h1>
         </div>
 
         {/* Pass Card */}
-        <div className="rounded-3xl p-8 space-y-6 max-w-md mx-auto bg-black/40 border border-purple-500 shadow-[0_0_40px_rgba(168,85,247,0.4)]">
+        <div className="glass-panel rounded-3xl p-6 md:p-8 space-y-4 md:space-y-6 max-w-md mx-auto neon-glow">
 
           {/* User */}
           <div className="text-center">
             <img
               src={userData.picture}
               alt={userData.name}
-              className="w-24 h-24 rounded-full mx-auto mb-4 border-2 border-purple-500"
+              className="w-20 h-20 md:w-24 md:h-24 rounded-full mx-auto mb-4 border-2 border-purple-500/50 neon-glow"
             />
-            <h2 className="text-xl text-white">{userData.name}</h2>
-            <p className="text-sm text-gray-400">{userData.email}</p>
+            <h2 className="text-lg md:text-xl font-exo text-chrome tracking-wide">{userData.name.toUpperCase()}</h2>
+            <p className="text-xs md:text-sm text-muted-foreground font-poppins">{userData.email}</p>
           </div>
 
           {/* ID */}
           <div className="text-center">
-            <p className="text-xs text-gray-400 mb-2">UNIQUE ID</p>
-            <p className="text-2xl text-purple-400 font-bold">
+            <p className="text-xs text-muted-foreground mb-2 font-poppins tracking-wide">UNIQUE ID</p>
+            <p className="text-xl md:text-2xl font-exo text-accent tracking-wider">
               {userData.id}
             </p>
           </div>
 
-          {/* ✅ FIXED QR CODE */}
+          {/* Responsive QR Code */}
           <div className="flex justify-center">
-            <div className="p-3 bg-white rounded-lg">
+            <div className="qr-responsive">
               <QRCodeCanvas
                 value={generateQRCodeData(
                   userData.id,
@@ -144,7 +144,7 @@ const Pass = () => {
                   userData.email,
                   userData.phone
                 )}
-                size={180}
+                size={140}
                 level="H"
                 bgColor="#ffffff"
                 fgColor="#000000"
@@ -153,32 +153,32 @@ const Pass = () => {
           </div>
 
           {/* Details */}
-          <div className="text-white space-y-2">
-            <p><strong>Dance:</strong> {userData.danceStyle}</p>
-            <p><strong>Phone:</strong> {userData.phone}</p>
-            <p className="text-purple-400">{userData.perks}</p>
+          <div className="text-foreground space-y-2 font-poppins text-sm">
+            <p><span className="font-exo text-accent">Dance:</span> {userData.danceStyle}</p>
+            <p><span className="font-exo text-accent">Phone:</span> {userData.phone}</p>
+            <p className="text-purple-400 font-exo text-xs tracking-wider">{userData.perks}</p>
           </div>
 
           {/* Buttons */}
           <div className="space-y-3">
             <button
               onClick={() => navigate("/home")}
-              className="w-full py-2 bg-purple-600 hover:bg-purple-700 rounded-lg text-white"
+              className="w-full py-3 btn-neon rounded-xl font-exo text-lg tracking-wider text-primary-foreground hover:scale-105 transition-all neon-glow"
             >
               Enter The Arena
             </button>
 
             <button
               onClick={downloadQRCode}
-              className="w-full py-2 bg-green-600 hover:bg-green-700 rounded-lg text-white"
+              className="w-full py-3 bg-green-600/80 hover:bg-green-500/90 rounded-xl font-exo text-lg tracking-wider text-primary-foreground hover:scale-105 transition-all border border-green-500/50 neon-glow"
             >
               Download QR Code
             </button>
           </div>
         </div>
 
-        <p className="text-center text-gray-400 mt-6 text-sm">
-          Show this pass at entry
+        <p className="text-center text-muted-foreground mt-6 text-xs md:text-sm font-poppins tracking-wide">
+          Show this pass at entry • Scan QR to verify
         </p>
       </div>
     </div>
