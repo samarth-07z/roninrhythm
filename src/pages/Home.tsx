@@ -1,6 +1,7 @@
 import { useNavigate } from "react-router-dom";
 import ParticleBackground from "@/components/ParticleBackground";
 import poster from "@/assets/poster.png";
+import roninLogo from "@/assets/logo_ronin.png";
 
 const Home = () => {
   const navigate = useNavigate();
