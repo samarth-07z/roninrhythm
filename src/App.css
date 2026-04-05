@@ -42,13 +42,4 @@
   color: #888;
 }
 
-@font-face {
-  font-family: "ExoCustom";
-  src: url("/src/assets/fonts/Exo-ExtraBold-Italic.otf") format("opentype");
-  font-weight: 800;
-  font-style: italic;
-}
 
-.font-exo {
-  font-family: "ExoCustom", sans-serif;
-}
