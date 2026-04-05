@@ -6,7 +6,7 @@
 
 @font-face {
   font-family: 'Exo';
-  src: url('/assets/Exo-ExtraBold-Italic.otf') format('opentype');
+  src: url('/fonts/Exo-ExtraBold-Italic.otf') format('opentype');
   font-weight: 800;
   font-style: italic;
 }

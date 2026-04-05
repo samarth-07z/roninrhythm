@@ -146,7 +146,7 @@ const Pass = () => {
             className="text-2xl md:text-3xl text-chrome neon-text-glow mt-4 tracking-wider"
             style={exoFont}
           >
-            YOUR EVENT PASS
+            RHYTHM PASS
           </h1>
         </div>
  
