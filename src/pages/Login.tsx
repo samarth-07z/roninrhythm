@@ -23,7 +23,6 @@ const Login = () => {
   const [successMsg, setSuccessMsg] = useState("");
   const [mode, setMode] = useState<"login" | "signup">("login");
 
-  // While Firebase is restoring the session, show nothing
   if (isLoading) {
     return (
       <div className="relative min-h-screen flex items-center justify-center bg-[#0a0014]">
@@ -32,10 +31,15 @@ const Login = () => {
     );
   }
 
-  // Already logged in — skip login page entirely
   if (firebaseUser) {
     return <Navigate to="/home" replace />;
   }
+
+  // Navigate to register carrying userData so the form fills instantly
+  // without waiting for AuthContext's async getUser call to complete
+  const goToRegister = (userData: any) => {
+    navigate("/register", { state: { prefill: userData } });
+  };
 
   const handleEmailAuth = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -49,24 +53,22 @@ const Login = () => {
       setError("");
       setSuccessMsg("");
 
-      let firebaseUser;
+      let fbUser;
 
       if (mode === "login") {
         const result = await signInWithEmailAndPassword(auth, email, password);
-        firebaseUser = result.user;
+        fbUser = result.user;
       } else {
         const result = await createUserWithEmailAndPassword(auth, email, password);
-        firebaseUser = result.user;
-        await updateProfile(firebaseUser, {
-          displayName: email.split("@")[0],
-        });
+        fbUser = result.user;
+        await updateProfile(fbUser, { displayName: email.split("@")[0] });
       }
 
       const userLike = {
-        uid: firebaseUser.uid,
-        displayName: firebaseUser.displayName || email.split("@")[0],
-        email: firebaseUser.email || email,
-        photoURL: firebaseUser.photoURL || "",
+        uid: fbUser.uid,
+        displayName: fbUser.displayName || email.split("@")[0],
+        email: fbUser.email || email,
+        photoURL: fbUser.photoURL || "",
       };
 
       const userData = await handleUser(userLike);
@@ -75,7 +77,7 @@ const Login = () => {
       if (userData.phone && userData.danceStyle) {
         navigate("/home");
       } else {
-        navigate("/register");
+        goToRegister(userData);
       }
     } catch (err: any) {
       console.error("Auth error:", err.code, err.message);
@@ -137,6 +139,8 @@ const Login = () => {
       setError("");
       setSuccessMsg("");
 
+      // loginWithGoogle() returns the Firebase user which has
+      // displayName and email populated directly from Google
       const googleUser = await loginWithGoogle();
       const userData = await handleUser(googleUser);
       localStorage.setItem("user", JSON.stringify(userData));
@@ -144,7 +148,7 @@ const Login = () => {
       if (userData.phone && userData.danceStyle) {
         navigate("/home");
       } else {
-        navigate("/register");
+        goToRegister(userData);
       }
     } catch (err: any) {
       console.error("Login error:", err);
