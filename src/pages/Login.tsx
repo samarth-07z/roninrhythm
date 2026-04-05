@@ -8,6 +8,7 @@ import {
   signInWithEmailAndPassword,
   createUserWithEmailAndPassword,
   updateProfile,
+  sendPasswordResetEmail,
 } from "firebase/auth";
 import { auth } from "@/config/firebase";
 
@@ -17,6 +18,7 @@ const Login = () => {
   const [password, setPassword] = useState("");
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState("");
+  const [successMsg, setSuccessMsg] = useState("");
   const [mode, setMode] = useState<"login" | "signup">("login");
 
   const handleEmailAuth = async (e: React.FormEvent) => {
@@ -29,24 +31,21 @@ const Login = () => {
     try {
       setIsLoading(true);
       setError("");
+      setSuccessMsg("");
 
       let firebaseUser;
 
       if (mode === "login") {
-        // Sign in existing user
         const result = await signInWithEmailAndPassword(auth, email, password);
         firebaseUser = result.user;
       } else {
-        // Create new user
         const result = await createUserWithEmailAndPassword(auth, email, password);
         firebaseUser = result.user;
-        // Set display name from email prefix
         await updateProfile(firebaseUser, {
           displayName: email.split("@")[0],
         });
       }
 
-      // Build a googleUser-shaped object so handleUser works the same way
       const userLike = {
         uid: firebaseUser.uid,
         displayName: firebaseUser.displayName || email.split("@")[0],
@@ -89,10 +88,38 @@ const Login = () => {
     }
   };
 
+  const handleForgotPassword = async () => {
+    if (!email) {
+      setError("Enter your email above first, then click Forgot Password.");
+      return;
+    }
+    try {
+      setIsLoading(true);
+      setError("");
+      setSuccessMsg("");
+      await sendPasswordResetEmail(auth, email);
+      setSuccessMsg(`Reset link sent to ${email} — check your inbox.`);
+    } catch (err: any) {
+      switch (err.code) {
+        case "auth/user-not-found":
+          setError("No account found with this email.");
+          break;
+        case "auth/invalid-email":
+          setError("Please enter a valid email address.");
+          break;
+        default:
+          setError("Failed to send reset email. Please try again.");
+      }
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
   const handleGoogleLogin = async () => {
     try {
       setIsLoading(true);
       setError("");
+      setSuccessMsg("");
 
       const googleUser = await loginWithGoogle();
       console.log("Google user:", googleUser);
@@ -144,7 +171,7 @@ const Login = () => {
         {/* Mode Toggle */}
         <div className="flex rounded-xl overflow-hidden mb-6 border border-purple-500/30">
           <button
-            onClick={() => { setMode("login"); setError(""); }}
+            onClick={() => { setMode("login"); setError(""); setSuccessMsg(""); }}
             className="flex-1 py-2 text-sm font-exo tracking-wider transition-all duration-300"
             style={{
               background: mode === "login" ? "rgba(180, 80, 255, 0.35)" : "transparent",
@@ -154,7 +181,7 @@ const Login = () => {
             SIGN IN
           </button>
           <button
-            onClick={() => { setMode("signup"); setError(""); }}
+            onClick={() => { setMode("signup"); setError(""); setSuccessMsg(""); }}
             className="flex-1 py-2 text-sm font-exo tracking-wider transition-all duration-300"
             style={{
               background: mode === "signup" ? "rgba(180, 80, 255, 0.35)" : "transparent",
@@ -192,9 +219,23 @@ const Login = () => {
               placeholder="••••••••"
               required
             />
+            {/* Forgot Password — only visible in login mode */}
+            {mode === "login" && (
+              <div className="text-right mt-2">
+                <button
+                  type="button"
+                  onClick={handleForgotPassword}
+                  disabled={isLoading}
+                  className="text-xs text-purple-400 hover:text-purple-300 transition-colors font-exo tracking-wide disabled:opacity-50"
+                >
+                  Forgot Password?
+                </button>
+              </div>
+            )}
           </div>
 
           {error && <p className="text-red-400 text-sm">{error}</p>}
+          {successMsg && <p className="text-green-400 text-sm">{successMsg}</p>}
 
           <button
             type="submit"
