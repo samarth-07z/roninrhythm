@@ -1,9 +1,10 @@
 import { useState } from "react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, Navigate } from "react-router-dom";
 import ParticleBackground from "@/components/ParticleBackground";
 import roninLogo from "@/assets/logo_ronin.png";
 import { loginWithGoogle } from "@/lib/auth";
 import { handleUser } from "@/lib/userService";
+import { useAuth } from "@/context/AuthContext";
 import {
   signInWithEmailAndPassword,
   createUserWithEmailAndPassword,
@@ -14,12 +15,27 @@ import { auth } from "@/config/firebase";
 
 const Login = () => {
   const navigate = useNavigate();
+  const { firebaseUser, isLoading } = useAuth();
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
-  const [isLoading, setIsLoading] = useState(false);
+  const [isSubmitting, setIsSubmitting] = useState(false);
   const [error, setError] = useState("");
   const [successMsg, setSuccessMsg] = useState("");
   const [mode, setMode] = useState<"login" | "signup">("login");
+
+  // While Firebase is restoring the session, show nothing
+  if (isLoading) {
+    return (
+      <div className="relative min-h-screen flex items-center justify-center bg-[#0a0014]">
+        <p className="text-purple-300 font-exo tracking-widest animate-pulse">LOADING...</p>
+      </div>
+    );
+  }
+
+  // Already logged in — skip login page entirely
+  if (firebaseUser) {
+    return <Navigate to="/home" replace />;
+  }
 
   const handleEmailAuth = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -29,7 +45,7 @@ const Login = () => {
     }
 
     try {
-      setIsLoading(true);
+      setIsSubmitting(true);
       setError("");
       setSuccessMsg("");
 
@@ -84,7 +100,7 @@ const Login = () => {
           setError("Authentication failed. Please try again.");
       }
     } finally {
-      setIsLoading(false);
+      setIsSubmitting(false);
     }
   };
 
@@ -94,7 +110,7 @@ const Login = () => {
       return;
     }
     try {
-      setIsLoading(true);
+      setIsSubmitting(true);
       setError("");
       setSuccessMsg("");
       await sendPasswordResetEmail(auth, email);
@@ -111,22 +127,18 @@ const Login = () => {
           setError("Failed to send reset email. Please try again.");
       }
     } finally {
-      setIsLoading(false);
+      setIsSubmitting(false);
     }
   };
 
   const handleGoogleLogin = async () => {
     try {
-      setIsLoading(true);
+      setIsSubmitting(true);
       setError("");
       setSuccessMsg("");
 
       const googleUser = await loginWithGoogle();
-      console.log("Google user:", googleUser);
-
       const userData = await handleUser(googleUser);
-      console.log("User data:", userData);
-
       localStorage.setItem("user", JSON.stringify(userData));
 
       if (userData.phone && userData.danceStyle) {
@@ -138,7 +150,7 @@ const Login = () => {
       console.error("Login error:", err);
       setError("Google login failed. Please try again.");
     } finally {
-      setIsLoading(false);
+      setIsSubmitting(false);
     }
   };
 
@@ -146,7 +158,6 @@ const Login = () => {
     <div className="relative min-h-screen flex items-center justify-center overflow-hidden">
       <ParticleBackground />
 
-      {/* Cosmic glow orbs */}
       <div
         className="absolute top-1/4 left-1/4 w-96 h-96 rounded-full opacity-20 animate-pulse-glow"
         style={{ background: "radial-gradient(circle, hsl(270 100% 60%), transparent 70%)" }}
@@ -219,13 +230,12 @@ const Login = () => {
               placeholder="••••••••"
               required
             />
-            {/* Forgot Password — only visible in login mode */}
             {mode === "login" && (
               <div className="text-right mt-2">
                 <button
                   type="button"
                   onClick={handleForgotPassword}
-                  disabled={isLoading}
+                  disabled={isSubmitting}
                   className="text-xs text-purple-400 hover:text-purple-300 transition-colors font-exo tracking-wide disabled:opacity-50"
                 >
                   Forgot Password?
@@ -239,7 +249,7 @@ const Login = () => {
 
           <button
             type="submit"
-            disabled={isLoading}
+            disabled={isSubmitting}
             className="w-full py-4 font-exo text-base tracking-wider text-primary-foreground uppercase mt-4 rounded-2xl transition-all duration-300 hover:scale-105 active:scale-95 disabled:opacity-50 disabled:cursor-not-allowed"
             style={{
               background: "rgba(180, 80, 255, 0.25)",
@@ -249,7 +259,7 @@ const Login = () => {
                 "0 0 30px hsl(270 100% 60% / 0.5), 0 0 60px hsl(270 100% 60% / 0.35), inset 0 0 30px hsl(270 100% 80% / 0.15), 0 15px 45px hsl(270 100% 60% / 0.25)",
             }}
             onMouseEnter={(e) => {
-              if (!isLoading)
+              if (!isSubmitting)
                 e.currentTarget.style.boxShadow =
                   "0 0 50px hsl(270 100% 60% / 0.7), 0 0 100px hsl(270 100% 60% / 0.4), inset 0 0 40px hsl(270 100% 80% / 0.2), 0 20px 60px hsl(270 100% 60% / 0.35)";
             }}
@@ -258,13 +268,13 @@ const Login = () => {
                 "0 0 30px hsl(270 100% 60% / 0.5), 0 0 60px hsl(270 100% 60% / 0.35), inset 0 0 30px hsl(270 100% 80% / 0.15), 0 15px 45px hsl(270 100% 60% / 0.25)";
             }}
           >
-            {isLoading
+            {isSubmitting
               ? mode === "login" ? "Signing In..." : "Creating Account..."
               : mode === "login" ? "Enter The Arena" : "Create Account"}
           </button>
         </form>
 
-        {/* Google Login Divider */}
+        {/* Divider */}
         <div className="relative mt-6 mb-4">
           <div className="absolute inset-0 flex items-center">
             <div className="w-full border-t border-muted-foreground/20"></div>
@@ -274,10 +284,10 @@ const Login = () => {
           </div>
         </div>
 
-        {/* Google Login Button */}
+        {/* Google Login */}
         <button
           onClick={handleGoogleLogin}
-          disabled={isLoading}
+          disabled={isSubmitting}
           className="w-full py-3 px-4 bg-white text-gray-900 font-medium rounded-lg transition-all duration-300 hover:bg-gray-50 active:scale-95 disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-3 border border-gray-300"
         >
           <svg className="w-5 h-5" viewBox="0 0 24 24">
@@ -286,7 +296,7 @@ const Login = () => {
             <path fill="#FBBC05" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z"/>
             <path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z"/>
           </svg>
-          {isLoading ? "Signing In..." : "Sign in with Google"}
+          {isSubmitting ? "Signing In..." : "Sign in with Google"}
         </button>
       </div>
     </div>

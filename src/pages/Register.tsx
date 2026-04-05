@@ -3,25 +3,25 @@ import { useNavigate } from "react-router-dom";
 import ParticleBackground from "@/components/ParticleBackground";
 import roninLogo from "@/assets/logo_ronin.png";
 import { saveRegistration } from "@/lib/userService";
+import { useAuth } from "@/context/AuthContext";
 
 const Register = () => {
   const navigate = useNavigate();
+  const { userData } = useAuth();
   const [form, setForm] = useState({ name: "", email: "", phone: "", danceStyle: "" });
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState("");
 
-  // Load user data from localStorage on mount
+  // Pre-fill name and email from auth context
   useEffect(() => {
-    const userData = localStorage.getItem("user");
     if (userData) {
-      const user = JSON.parse(userData);
       setForm((prev) => ({
         ...prev,
-        name: user.name || "",
-        email: user.email || "",
+        name: userData.name || "",
+        email: userData.email || "",
       }));
     }
-  }, []);
+  }, [userData]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -35,26 +35,21 @@ const Register = () => {
       setIsLoading(true);
       setError("");
 
-      // Save registration to Firebase
       await saveRegistration(form.email, {
         phone: form.phone,
         danceStyle: form.danceStyle,
       });
 
-      // Update localStorage
-      const userData = localStorage.getItem("user");
-      if (userData) {
-        const user = JSON.parse(userData);
+      // Update localStorage so the rest of the app sees the new fields immediately
+      const stored = localStorage.getItem("user");
+      if (stored) {
+        const user = JSON.parse(stored);
         user.phone = form.phone;
         user.danceStyle = form.danceStyle;
         localStorage.setItem("user", JSON.stringify(user));
       }
 
-      console.log("Registration saved successfully");
-
-      // Navigate to Pass page
       navigate("/pass");
-
     } catch (err: any) {
       console.error("Registration error:", err);
       setError("Failed to save registration. Please try again.");

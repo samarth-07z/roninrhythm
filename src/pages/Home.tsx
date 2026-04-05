@@ -1,42 +1,24 @@
 import { useNavigate } from "react-router-dom";
-import { useEffect, useState } from "react";
 import ParticleBackground from "@/components/ParticleBackground";
 import poster from "@/assets/poster.avif";
 import roninLogo from "@/assets/logo_ronin.png";
-
-interface UserData {
-  name: string;
-  picture: string;
-  id: string;
-  phone?: string;
-  danceStyle?: string;
-}
+import { useAuth } from "@/context/AuthContext";
 
 const Home = () => {
   const navigate = useNavigate();
-  const [user, setUser] = useState<UserData | null>(null);
+  const { userData } = useAuth();
 
-  useEffect(() => {
-    const userData = localStorage.getItem("user");
-    if (userData) {
-      setUser(JSON.parse(userData));
-    }
-  }, []);
-
-  const isRegistered = user?.phone && user?.danceStyle;
+  const isRegistered = userData?.phone && userData?.danceStyle;
 
   return (
     <div className="relative min-h-screen overflow-hidden">
       <ParticleBackground />
 
-      {/* Hero */}
       <section className="relative z-10 flex flex-col items-center justify-center min-h-screen text-center px-4">
-        {/* Background poster image - very subtle */}
         <div className="absolute inset-0 opacity-10">
           <img src={poster} alt="" className="w-full h-full object-cover" />
         </div>
 
-        {/* Cosmic glow behind title */}
         <div className="absolute top-1/3 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[600px] h-[600px] rounded-full opacity-25"
           style={{ background: "radial-gradient(circle, hsl(270 100% 60%), hsl(280 80% 30%) 40%, transparent 70%)" }} />
 
@@ -49,7 +31,6 @@ const Home = () => {
             ONE FLOOR. ONE RHYTHM. ONE WINNER.
           </p>
 
-          {/* Event details */}
           <div className="mt-12 space-y-3">
             <p className="text-2xl md:text-3xl font-exo tracking-wide text-chrome">
               16 APRIL 2026
@@ -62,10 +43,7 @@ const Home = () => {
             </p>
           </div>
 
-          {/* CTA Buttons */}
           <div className="mt-14 flex flex-col gap-4 items-center">
-
-            {/* Show only if NOT registered */}
             {!isRegistered && (
               <button
                 onClick={() => navigate("/register")}
@@ -87,7 +65,6 @@ const Home = () => {
               </button>
             )}
 
-            {/* Show only if registered */}
             {isRegistered && (
               <button
                 onClick={() => navigate("/pass")}
@@ -110,17 +87,15 @@ const Home = () => {
             )}
           </div>
 
-          {/* User Info */}
-          {user && (
+          {userData && (
             <div className="mt-8 text-center">
               <p className="text-sm font-exo tracking-wide text-muted-foreground">Welcome,</p>
-              <p className="text-lg font-exo tracking-wide text-chrome">{user.name}</p>
+              <p className="text-lg font-exo tracking-wide text-chrome">{userData.name}</p>
             </div>
           )}
         </div>
       </section>
 
-      {/* Footer */}
       <footer className="relative z-10 w-full text-center py-6 px-4 border-t border-muted/20">
         <p className="text-[11px] font-poppins tracking-wider text-muted-foreground">
           © 2026 ALL RIGHTS RESERVED • MADE WITH <span style={{ color: "hsl(270 100% 60%)" }}>♥</span> BY SAMARTH
