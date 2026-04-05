@@ -4,6 +4,12 @@ import ParticleBackground from "@/components/ParticleBackground";
 import roninLogo from "@/assets/logo_ronin.png";
 import { loginWithGoogle } from "@/lib/auth";
 import { handleUser } from "@/lib/userService";
+import {
+  signInWithEmailAndPassword,
+  createUserWithEmailAndPassword,
+  updateProfile,
+} from "firebase/auth";
+import { auth } from "@/config/firebase";
 
 const Login = () => {
   const navigate = useNavigate();
@@ -11,10 +17,76 @@ const Login = () => {
   const [password, setPassword] = useState("");
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState("");
+  const [mode, setMode] = useState<"login" | "signup">("login");
 
-  const handleLogin = (e: React.FormEvent) => {
+  const handleEmailAuth = async (e: React.FormEvent) => {
     e.preventDefault();
-    navigate("/home");
+    if (!email || !password) {
+      setError("Please enter your email and password.");
+      return;
+    }
+
+    try {
+      setIsLoading(true);
+      setError("");
+
+      let firebaseUser;
+
+      if (mode === "login") {
+        // Sign in existing user
+        const result = await signInWithEmailAndPassword(auth, email, password);
+        firebaseUser = result.user;
+      } else {
+        // Create new user
+        const result = await createUserWithEmailAndPassword(auth, email, password);
+        firebaseUser = result.user;
+        // Set display name from email prefix
+        await updateProfile(firebaseUser, {
+          displayName: email.split("@")[0],
+        });
+      }
+
+      // Build a googleUser-shaped object so handleUser works the same way
+      const userLike = {
+        uid: firebaseUser.uid,
+        displayName: firebaseUser.displayName || email.split("@")[0],
+        email: firebaseUser.email || email,
+        photoURL: firebaseUser.photoURL || "",
+      };
+
+      const userData = await handleUser(userLike);
+      localStorage.setItem("user", JSON.stringify(userData));
+
+      if (userData.phone && userData.danceStyle) {
+        navigate("/home");
+      } else {
+        navigate("/register");
+      }
+    } catch (err: any) {
+      console.error("Auth error:", err.code, err.message);
+      switch (err.code) {
+        case "auth/user-not-found":
+          setError("No account found. Switch to Sign Up to create one.");
+          break;
+        case "auth/wrong-password":
+        case "auth/invalid-credential":
+          setError("Incorrect email or password.");
+          break;
+        case "auth/email-already-in-use":
+          setError("Email already registered. Please log in instead.");
+          break;
+        case "auth/weak-password":
+          setError("Password must be at least 6 characters.");
+          break;
+        case "auth/invalid-email":
+          setError("Please enter a valid email address.");
+          break;
+        default:
+          setError("Authentication failed. Please try again.");
+      }
+    } finally {
+      setIsLoading(false);
+    }
   };
 
   const handleGoogleLogin = async () => {
@@ -22,28 +94,22 @@ const Login = () => {
       setIsLoading(true);
       setError("");
 
-      // Sign in with Google
       const googleUser = await loginWithGoogle();
       console.log("Google user:", googleUser);
 
-      // Handle user in Realtime DB
       const userData = await handleUser(googleUser);
       console.log("User data:", userData);
 
-      // Save to localStorage
       localStorage.setItem("user", JSON.stringify(userData));
 
-      // Redirect based on registration status
       if (userData.phone && userData.danceStyle) {
-        // User has completed registration - go to home
         navigate("/home");
       } else {
-        // New user or incomplete registration - go to register page
         navigate("/register");
       }
     } catch (err: any) {
       console.error("Login error:", err);
-      setError("Login failed. Please try again.");
+      setError("Google login failed. Please try again.");
     } finally {
       setIsLoading(false);
     }
@@ -56,9 +122,7 @@ const Login = () => {
       {/* Cosmic glow orbs */}
       <div
         className="absolute top-1/4 left-1/4 w-96 h-96 rounded-full opacity-20 animate-pulse-glow"
-        style={{
-          background: "radial-gradient(circle, hsl(270 100% 60%), transparent 70%)",
-        }}
+        style={{ background: "radial-gradient(circle, hsl(270 100% 60%), transparent 70%)" }}
       />
       <div
         className="absolute bottom-1/4 right-1/4 w-64 h-64 rounded-full opacity-15 animate-pulse-glow"
@@ -77,17 +141,42 @@ const Login = () => {
           />
         </div>
 
-        <form onSubmit={handleLogin} className="glass-panel rounded-2xl p-8 space-y-5">
+        {/* Mode Toggle */}
+        <div className="flex rounded-xl overflow-hidden mb-6 border border-purple-500/30">
+          <button
+            onClick={() => { setMode("login"); setError(""); }}
+            className="flex-1 py-2 text-sm font-exo tracking-wider transition-all duration-300"
+            style={{
+              background: mode === "login" ? "rgba(180, 80, 255, 0.35)" : "transparent",
+              color: mode === "login" ? "#fff" : "rgba(255,255,255,0.5)",
+            }}
+          >
+            SIGN IN
+          </button>
+          <button
+            onClick={() => { setMode("signup"); setError(""); }}
+            className="flex-1 py-2 text-sm font-exo tracking-wider transition-all duration-300"
+            style={{
+              background: mode === "signup" ? "rgba(180, 80, 255, 0.35)" : "transparent",
+              color: mode === "signup" ? "#fff" : "rgba(255,255,255,0.5)",
+            }}
+          >
+            SIGN UP
+          </button>
+        </div>
+
+        <form onSubmit={handleEmailAuth} className="glass-panel rounded-2xl p-8 space-y-5">
           <div>
             <label className="block text-xs font-exo tracking-wider text-muted-foreground mb-2">
-              USERNAME / EMAIL
+              EMAIL
             </label>
             <input
-              type="text"
+              type="email"
               value={email}
               onChange={(e) => setEmail(e.target.value)}
               className="w-full input-neon rounded-lg px-4 py-3 text-foreground font-body tracking-wide"
-              placeholder="enter your identity"
+              placeholder="your@email.com"
+              required
             />
           </div>
 
@@ -101,12 +190,16 @@ const Login = () => {
               onChange={(e) => setPassword(e.target.value)}
               className="w-full input-neon rounded-lg px-4 py-3 text-foreground font-body tracking-wide"
               placeholder="••••••••"
+              required
             />
           </div>
 
+          {error && <p className="text-red-400 text-sm">{error}</p>}
+
           <button
             type="submit"
-            className="w-full py-4 font-exo text-base tracking-wider text-primary-foreground uppercase mt-4 rounded-2xl transition-all duration-300 hover:scale-105 active:scale-95"
+            disabled={isLoading}
+            className="w-full py-4 font-exo text-base tracking-wider text-primary-foreground uppercase mt-4 rounded-2xl transition-all duration-300 hover:scale-105 active:scale-95 disabled:opacity-50 disabled:cursor-not-allowed"
             style={{
               background: "rgba(180, 80, 255, 0.25)",
               backdropFilter: "blur(20px)",
@@ -115,15 +208,18 @@ const Login = () => {
                 "0 0 30px hsl(270 100% 60% / 0.5), 0 0 60px hsl(270 100% 60% / 0.35), inset 0 0 30px hsl(270 100% 80% / 0.15), 0 15px 45px hsl(270 100% 60% / 0.25)",
             }}
             onMouseEnter={(e) => {
-              e.currentTarget.style.boxShadow =
-                "0 0 50px hsl(270 100% 60% / 0.7), 0 0 100px hsl(270 100% 60% / 0.4), inset 0 0 40px hsl(270 100% 80% / 0.2), 0 20px 60px hsl(270 100% 60% / 0.35)";
+              if (!isLoading)
+                e.currentTarget.style.boxShadow =
+                  "0 0 50px hsl(270 100% 60% / 0.7), 0 0 100px hsl(270 100% 60% / 0.4), inset 0 0 40px hsl(270 100% 80% / 0.2), 0 20px 60px hsl(270 100% 60% / 0.35)";
             }}
             onMouseLeave={(e) => {
               e.currentTarget.style.boxShadow =
                 "0 0 30px hsl(270 100% 60% / 0.5), 0 0 60px hsl(270 100% 60% / 0.35), inset 0 0 30px hsl(270 100% 80% / 0.15), 0 15px 45px hsl(270 100% 60% / 0.25)";
             }}
           >
-            Enter The Arena
+            {isLoading
+              ? mode === "login" ? "Signing In..." : "Creating Account..."
+              : mode === "login" ? "Enter The Arena" : "Create Account"}
           </button>
         </form>
 
@@ -151,18 +247,6 @@ const Login = () => {
           </svg>
           {isLoading ? "Signing In..." : "Sign in with Google"}
         </button>
-
-        {error && <p className="text-red-400 text-sm mt-3 text-center">{error}</p>}
-
-        {/* Sign Up Link */}
-        <div className="text-center mt-6">
-          <p className="text-sm text-muted-foreground">
-            Don't have an account?{" "}
-            <a href="/register" className="text-purple-400 hover:text-purple-300 transition-colors">
-              Sign Up
-            </a>
-          </p>
-        </div>
       </div>
     </div>
   );
