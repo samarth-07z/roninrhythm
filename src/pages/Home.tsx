@@ -64,26 +64,30 @@ const Home = () => {
 
           {/* CTA Buttons */}
           <div className="mt-14 flex flex-col gap-4 items-center">
-            <button
-              onClick={() => navigate("/register")}
-              className="px-12 py-4 rounded-3xl font-exo text-base md:text-lg tracking-wider text-primary-foreground uppercase transition-all duration-300 hover:scale-105 active:scale-95"
-              style={{
-                background: "rgba(180, 80, 255, 0.25)",
-                backdropFilter: "blur(20px)",
-                border: "1.5px solid hsl(270 100% 60% / 0.6)",
-                boxShadow: "0 0 30px hsl(270 100% 60% / 0.5), 0 0 60px hsl(270 100% 60% / 0.35), inset 0 0 30px hsl(270 100% 80% / 0.15), 0 15px 45px hsl(270 100% 60% / 0.25)"
-              }}
-              onMouseEnter={(e) => {
-                e.currentTarget.style.boxShadow = "0 0 50px hsl(270 100% 60% / 0.7), 0 0 100px hsl(270 100% 60% / 0.4), inset 0 0 40px hsl(270 100% 80% / 0.2), 0 20px 60px hsl(270 100% 60% / 0.35)";
-              }}
-              onMouseLeave={(e) => {
-                e.currentTarget.style.boxShadow = "0 0 30px hsl(270 100% 60% / 0.5), 0 0 60px hsl(270 100% 60% / 0.35), inset 0 0 30px hsl(270 100% 80% / 0.15), 0 15px 45px hsl(270 100% 60% / 0.25)";
-              }}
-            >
-              Prove Your Groove
-            </button>
 
-            {/* View Pass Button - Only show if user is registered */}
+            {/* Show only if NOT registered */}
+            {!isRegistered && (
+              <button
+                onClick={() => navigate("/register")}
+                className="px-12 py-4 rounded-3xl font-exo text-base md:text-lg tracking-wider text-primary-foreground uppercase transition-all duration-300 hover:scale-105 active:scale-95"
+                style={{
+                  background: "rgba(180, 80, 255, 0.25)",
+                  backdropFilter: "blur(20px)",
+                  border: "1.5px solid hsl(270 100% 60% / 0.6)",
+                  boxShadow: "0 0 30px hsl(270 100% 60% / 0.5), 0 0 60px hsl(270 100% 60% / 0.35), inset 0 0 30px hsl(270 100% 80% / 0.15), 0 15px 45px hsl(270 100% 60% / 0.25)"
+                }}
+                onMouseEnter={(e) => {
+                  e.currentTarget.style.boxShadow = "0 0 50px hsl(270 100% 60% / 0.7), 0 0 100px hsl(270 100% 60% / 0.4), inset 0 0 40px hsl(270 100% 80% / 0.2), 0 20px 60px hsl(270 100% 60% / 0.35)";
+                }}
+                onMouseLeave={(e) => {
+                  e.currentTarget.style.boxShadow = "0 0 30px hsl(270 100% 60% / 0.5), 0 0 60px hsl(270 100% 60% / 0.35), inset 0 0 30px hsl(270 100% 80% / 0.15), 0 15px 45px hsl(270 100% 60% / 0.25)";
+                }}
+              >
+                Prove Your Groove
+              </button>
+            )}
+
+            {/* Show only if registered */}
             {isRegistered && (
               <button
                 onClick={() => navigate("/pass")}
@@ -101,7 +105,7 @@ const Home = () => {
                   e.currentTarget.style.boxShadow = "0 0 30px hsl(270 100% 60% / 0.5), 0 0 60px hsl(270 100% 60% / 0.35), inset 0 0 30px hsl(270 100% 80% / 0.15), 0 15px 45px hsl(270 100% 60% / 0.25)";
                 }}
               >
-                View Your Pass 🎟️
+                View Your Pass
               </button>
             )}
           </div>
