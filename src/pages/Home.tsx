@@ -1,7 +1,7 @@
 import { useNavigate } from "react-router-dom";
 import { useEffect, useState } from "react";
 import ParticleBackground from "@/components/ParticleBackground";
-import poster from "@/assets/poster.png";
+import poster from "@/assets/poster.avif";
 import roninLogo from "@/assets/logo_ronin.png";
 
 interface UserData {
