@@ -5,7 +5,29 @@ import ParticleBackground from "@/components/ParticleBackground";
 import roninLogo from "@/assets/logo_ronin.png";
 import { getUser } from "@/lib/userService";
 import { generateQRCodeData } from "@/lib/qrCodeUtils";
- 
+
+import avatar1 from "@/assets/avatar1.avif";
+import avatar2 from "@/assets/avatar2.avif";
+import avatar3 from "@/assets/avatar3.avif";
+import avatar4 from "@/assets/avatar4.avif";
+import avatar5 from "@/assets/avatar5.avif";
+import avatar6 from "@/assets/avatar6.avif";
+import avatar7 from "@/assets/avatar7.avif";
+import avatar8 from "@/assets/avatar8.avif";
+import avatar9 from "@/assets/avatar9.avif";
+
+const avatars = [avatar1, avatar2, avatar3, avatar4, avatar5, avatar6, avatar7, avatar8, avatar9];
+
+// Picks a stable avatar based on user ID — same user always gets same avatar
+const getAvatarForUser = (userId: string): string => {
+  let hash = 0;
+  for (let i = 0; i < userId.length; i++) {
+    hash = userId.charCodeAt(i) + ((hash << 5) - hash);
+  }
+  const index = Math.abs(hash) % avatars.length;
+  return avatars[index];
+};
+
 interface UserData {
   name: string;
   email: string;
@@ -15,14 +37,14 @@ interface UserData {
   danceStyle: string;
   perks: string;
 }
- 
+
 const Pass = () => {
   const navigate = useNavigate();
   const [userData, setUserData] = useState<UserData | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState("");
   const qrRef = useRef<HTMLDivElement>(null);
- 
+
   useEffect(() => {
     const loadUserData = async () => {
       try {
@@ -32,10 +54,10 @@ const Pass = () => {
           navigate("/");
           return;
         }
- 
+
         const user = JSON.parse(stored);
         const dbUser = await getUser(user.email);
- 
+
         if (dbUser) {
           setUserData(dbUser);
         } else {
@@ -48,38 +70,31 @@ const Pass = () => {
         setIsLoading(false);
       }
     };
- 
+
     loadUserData();
   }, [navigate]);
- 
+
   const downloadQRCode = () => {
-    // Find the canvas inside the qrRef container
     const canvas = qrRef.current?.querySelector("canvas");
     if (!canvas || !userData) return;
- 
-    // Create a new canvas with padding and label
+
     const padding = 20;
     const labelHeight = 30;
     const newCanvas = document.createElement("canvas");
     newCanvas.width = canvas.width + padding * 2;
     newCanvas.height = canvas.height + padding * 2 + labelHeight;
- 
+
     const ctx = newCanvas.getContext("2d");
     if (!ctx) return;
- 
-    // White background
+
     ctx.fillStyle = "#ffffff";
     ctx.fillRect(0, 0, newCanvas.width, newCanvas.height);
- 
-    // Draw QR code centered with padding
     ctx.drawImage(canvas, padding, padding);
- 
-    // Add ID label below
     ctx.fillStyle = "#000000";
     ctx.font = "bold 14px monospace";
     ctx.textAlign = "center";
     ctx.fillText(userData.id, newCanvas.width / 2, canvas.height + padding + labelHeight - 8);
- 
+
     const url = newCanvas.toDataURL("image/png");
     const link = document.createElement("a");
     link.href = url;
@@ -88,30 +103,29 @@ const Pass = () => {
     link.click();
     document.body.removeChild(link);
   };
- 
+
   if (isLoading) {
     return (
       <div className="relative min-h-screen flex items-center justify-center overflow-hidden">
         <ParticleBackground />
-        <div className="text-white text-xl" style={{ fontFamily: "'ExoExtraBoldItalic', 'Exo', sans-serif" }}>
+        <div className="text-white text-xl font-exo">
           Loading your pass...
         </div>
       </div>
     );
   }
- 
+
   if (error || !userData) {
     return (
       <div className="relative min-h-screen flex items-center justify-center overflow-hidden">
         <ParticleBackground />
         <div className="relative z-10 text-center">
-          <p className="text-red-400 text-lg mb-4" style={{ fontFamily: "'ExoExtraBoldItalic', 'Exo', sans-serif" }}>
+          <p className="text-red-400 text-lg mb-4 font-exo">
             {error || "User data not available"}
           </p>
           <button
             onClick={() => navigate("/")}
-            className="px-6 py-3 bg-purple-600 hover:bg-purple-700 rounded-lg text-white tracking-wider"
-            style={{ fontFamily: "'ExoExtraBoldItalic', 'Exo', sans-serif" }}
+            className="px-6 py-3 bg-purple-600 hover:bg-purple-700 rounded-lg text-white tracking-wider font-exo"
           >
             Back to Login
           </button>
@@ -119,13 +133,14 @@ const Pass = () => {
       </div>
     );
   }
- 
-  const exoFont = { fontFamily: "'Exo', sans-serif", fontWeight: 800, fontStyle: "italic" };
- 
+
+  const exoFont = { fontFamily: "'Exo', sans-serif", fontWeight: 800, fontStyle: "italic" as const };
+  const avatarSrc = getAvatarForUser(userData.id);
+
   return (
     <div className="relative min-h-screen flex items-center justify-center overflow-hidden py-12">
       <ParticleBackground />
- 
+
       {/* Glow Background */}
       <div
         className="absolute top-1/4 left-1/4 w-96 h-96 rounded-full opacity-20 animate-pulse"
@@ -133,7 +148,7 @@ const Pass = () => {
           background: "radial-gradient(circle, hsl(270 100% 60%), transparent 70%)",
         }}
       />
- 
+
       <div className="relative z-10 w-full max-w-2xl px-4">
         {/* Header */}
         <div className="text-center mb-8">
@@ -149,16 +164,16 @@ const Pass = () => {
             RHYTHM PASS
           </h1>
         </div>
- 
+
         {/* Pass Card */}
         <div className="glass-panel rounded-3xl p-6 md:p-8 space-y-6 max-w-md mx-auto neon-glow">
- 
+
           {/* User */}
           <div className="text-center">
             <img
-              src={userData.picture}
+              src={avatarSrc}
               alt={userData.name}
-              className="w-20 h-20 md:w-24 md:h-24 rounded-full mx-auto mb-4 border-2 border-purple-500/50 neon-glow"
+              className="w-20 h-20 md:w-24 md:h-24 rounded-full mx-auto mb-4 border-2 border-purple-500/50 neon-glow object-cover"
             />
             <h2
               className="text-lg md:text-xl text-chrome tracking-wide"
@@ -170,7 +185,7 @@ const Pass = () => {
               {userData.email}
             </p>
           </div>
- 
+
           {/* ID */}
           <div className="text-center">
             <p className="text-xs text-muted-foreground mb-2 font-poppins tracking-wide">
@@ -183,8 +198,8 @@ const Pass = () => {
               {userData.id}
             </p>
           </div>
- 
-          {/* QR — isolated in its own div with white bg, no transforms */}
+
+          {/* QR */}
           <div className="flex justify-center">
             <div
               ref={qrRef}
@@ -193,7 +208,7 @@ const Pass = () => {
                 padding: "12px",
                 borderRadius: "12px",
                 display: "inline-block",
-                lineHeight: 0,        // prevents extra gap below canvas
+                lineHeight: 0,
               }}
             >
               <QRCodeCanvas
@@ -207,11 +222,11 @@ const Pass = () => {
                 level="H"
                 bgColor="#ffffff"
                 fgColor="#000000"
-                style={{ display: "block" }}  // removes inline baseline gap
+                style={{ display: "block" }}
               />
             </div>
           </div>
- 
+
           {/* Details */}
           <div className="text-foreground space-y-2 font-poppins text-sm">
             <p>
@@ -226,7 +241,7 @@ const Pass = () => {
               {userData.perks}
             </p>
           </div>
- 
+
           {/* Buttons */}
           <div className="space-y-3">
             <button
@@ -242,7 +257,7 @@ const Pass = () => {
             >
               Enter The Arena
             </button>
- 
+
             <button
               onClick={downloadQRCode}
               className="w-full py-3 rounded-xl text-lg tracking-wider text-white transition-all duration-300 hover:scale-105"
@@ -258,7 +273,7 @@ const Pass = () => {
             </button>
           </div>
         </div>
- 
+
         <p className="text-center text-muted-foreground mt-6 text-xs md:text-sm font-poppins tracking-wide">
           Show this pass at entry • Scan QR to verify
         </p>
@@ -266,5 +281,5 @@ const Pass = () => {
     </div>
   );
 };
- 
+
 export default Pass;
