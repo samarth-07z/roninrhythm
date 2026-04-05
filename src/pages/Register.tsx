@@ -1,14 +1,12 @@
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import ParticleBackground from "@/components/ParticleBackground";
-import EventPass from "@/components/EventPass";
 import roninLogo from "@/assets/logo_ronin.png";
 import { saveRegistration } from "@/lib/userService";
 
 const Register = () => {
   const navigate = useNavigate();
   const [form, setForm] = useState({ name: "", email: "", phone: "", danceStyle: "" });
-  const [passData, setPassData] = useState<{ name: string; uniqueId: string } | null>(null);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState("");
 
@@ -27,7 +25,7 @@ const Register = () => {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    
+
     if (!form.email) {
       setError("Email is required. Please log in again.");
       return;
@@ -50,10 +48,13 @@ const Register = () => {
         user.phone = form.phone;
         user.danceStyle = form.danceStyle;
         localStorage.setItem("user", JSON.stringify(user));
-        setPassData({ name: user.name, uniqueId: user.id });
       }
 
       console.log("Registration saved successfully");
+
+      // Navigate to Pass page
+      navigate("/pass");
+
     } catch (err: any) {
       console.error("Registration error:", err);
       setError("Failed to save registration. Please try again.");
@@ -101,7 +102,7 @@ const Register = () => {
 
           {error && <p className="text-red-400 text-sm">{error}</p>}
 
-          <button 
+          <button
             type="submit"
             disabled={isLoading}
             className="w-full py-4 font-exo text-base tracking-wider text-primary-foreground uppercase mt-4 rounded-2xl transition-all duration-300 hover:scale-105 active:scale-95 disabled:opacity-50 disabled:cursor-not-allowed"
@@ -124,10 +125,6 @@ const Register = () => {
           </button>
         </form>
       </div>
-
-      {passData && (
-        <EventPass name={passData.name} uniqueId={passData.uniqueId} onClose={() => setPassData(null)} />
-      )}
     </div>
   );
 };
