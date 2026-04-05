@@ -80,11 +80,38 @@ const Pass = () => {
     try {
       setIsDownloading(true);
 
-      const dataUrl = await toPng(passCardRef.current, {
+      const card = passCardRef.current;
+
+      // Temporarily fix the card to an explicit pixel width so
+      // html-to-image captures every pixel (no percentage / flex overflow).
+      const originalStyle = card.getAttribute("style") || "";
+      const captureWidth = 480; // px — wide enough for all content
+
+      card.style.width = `${captureWidth}px`;
+      card.style.minWidth = `${captureWidth}px`;
+      card.style.maxWidth = `${captureWidth}px`;
+
+      // Let the browser reflow so scrollHeight is accurate
+      await new Promise((r) => requestAnimationFrame(r));
+      await new Promise((r) => requestAnimationFrame(r));
+
+      const captureHeight = card.scrollHeight;
+
+      const dataUrl = await toPng(card, {
         pixelRatio: 3,
         backgroundColor: "#0a0014",
-        style: { borderRadius: "24px" },
+        width: captureWidth,
+        height: captureHeight,
+        style: {
+          borderRadius: "24px",
+          width: `${captureWidth}px`,
+          height: `${captureHeight}px`,
+          overflow: "visible",
+        },
       });
+
+      // Restore original style
+      card.setAttribute("style", originalStyle);
 
       const link = document.createElement("a");
       link.href = dataUrl;
@@ -159,8 +186,11 @@ const Pass = () => {
         {/* ===== PASS CARD — everything inside here gets downloaded ===== */}
         <div
           ref={passCardRef}
-          className="rounded-3xl p-6 md:p-8 space-y-5 max-w-md mx-auto"
+          className="rounded-3xl p-6 md:p-8 space-y-5 mx-auto"
           style={{
+            width: "100%",
+            maxWidth: "480px",
+            boxSizing: "border-box",
             background: "linear-gradient(135deg, hsl(270 80% 8% / 0.98), hsl(280 60% 12% / 0.98))",
             border: "1px solid hsl(270 60% 30% / 0.6)",
             boxShadow: "0 0 30px hsl(270 100% 60% / 0.15), inset 0 0 30px hsl(270 100% 60% / 0.05)",
