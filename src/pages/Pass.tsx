@@ -1,6 +1,7 @@
 import { useEffect, useState, useRef } from "react";
 import { useNavigate } from "react-router-dom";
 import { QRCodeCanvas } from "qrcode.react";
+import { toPng } from "html-to-image";
 import ParticleBackground from "@/components/ParticleBackground";
 import roninLogo from "@/assets/logo_ronin.png";
 import { getUser } from "@/lib/userService";
@@ -18,14 +19,12 @@ import avatar9 from "@/assets/avatar9.avif";
 
 const avatars = [avatar1, avatar2, avatar3, avatar4, avatar5, avatar6, avatar7, avatar8, avatar9];
 
-// Picks a stable avatar based on user ID — same user always gets same avatar
 const getAvatarForUser = (userId: string): string => {
   let hash = 0;
   for (let i = 0; i < userId.length; i++) {
     hash = userId.charCodeAt(i) + ((hash << 5) - hash);
   }
-  const index = Math.abs(hash) % avatars.length;
-  return avatars[index];
+  return avatars[Math.abs(hash) % avatars.length];
 };
 
 interface UserData {
@@ -42,8 +41,9 @@ const Pass = () => {
   const navigate = useNavigate();
   const [userData, setUserData] = useState<UserData | null>(null);
   const [isLoading, setIsLoading] = useState(true);
+  const [isDownloading, setIsDownloading] = useState(false);
   const [error, setError] = useState("");
-  const qrRef = useRef<HTMLDivElement>(null);
+  const passCardRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     const loadUserData = async () => {
@@ -74,43 +74,36 @@ const Pass = () => {
     loadUserData();
   }, [navigate]);
 
-  const downloadQRCode = () => {
-    const canvas = qrRef.current?.querySelector("canvas");
-    if (!canvas || !userData) return;
+  const downloadPass = async () => {
+    if (!passCardRef.current || !userData) return;
 
-    const padding = 20;
-    const labelHeight = 30;
-    const newCanvas = document.createElement("canvas");
-    newCanvas.width = canvas.width + padding * 2;
-    newCanvas.height = canvas.height + padding * 2 + labelHeight;
+    try {
+      setIsDownloading(true);
 
-    const ctx = newCanvas.getContext("2d");
-    if (!ctx) return;
+      const dataUrl = await toPng(passCardRef.current, {
+        pixelRatio: 3,
+        backgroundColor: "#0a0014",
+        style: { borderRadius: "24px" },
+      });
 
-    ctx.fillStyle = "#ffffff";
-    ctx.fillRect(0, 0, newCanvas.width, newCanvas.height);
-    ctx.drawImage(canvas, padding, padding);
-    ctx.fillStyle = "#000000";
-    ctx.font = "bold 14px monospace";
-    ctx.textAlign = "center";
-    ctx.fillText(userData.id, newCanvas.width / 2, canvas.height + padding + labelHeight - 8);
-
-    const url = newCanvas.toDataURL("image/png");
-    const link = document.createElement("a");
-    link.href = url;
-    link.download = `${userData.id}-qr.png`;
-    document.body.appendChild(link);
-    link.click();
-    document.body.removeChild(link);
+      const link = document.createElement("a");
+      link.href = dataUrl;
+      link.download = `${userData.id}-pass.png`;
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+    } catch (err) {
+      console.error("Failed to download pass:", err);
+    } finally {
+      setIsDownloading(false);
+    }
   };
 
   if (isLoading) {
     return (
       <div className="relative min-h-screen flex items-center justify-center overflow-hidden">
         <ParticleBackground />
-        <div className="text-white text-xl font-exo">
-          Loading your pass...
-        </div>
+        <div className="text-white text-xl font-exo">Loading your pass...</div>
       </div>
     );
   }
@@ -144,13 +137,11 @@ const Pass = () => {
       {/* Glow Background */}
       <div
         className="absolute top-1/4 left-1/4 w-96 h-96 rounded-full opacity-20 animate-pulse"
-        style={{
-          background: "radial-gradient(circle, hsl(270 100% 60%), transparent 70%)",
-        }}
+        style={{ background: "radial-gradient(circle, hsl(270 100% 60%), transparent 70%)" }}
       />
 
       <div className="relative z-10 w-full max-w-2xl px-4">
-        {/* Header */}
+        {/* Page Header — not captured in download */}
         <div className="text-center mb-8">
           <img
             src={roninLogo}
@@ -165,44 +156,68 @@ const Pass = () => {
           </h1>
         </div>
 
-        {/* Pass Card */}
-        <div className="glass-panel rounded-3xl p-6 md:p-8 space-y-6 max-w-md mx-auto neon-glow">
+        {/* ===== PASS CARD — everything inside here gets downloaded ===== */}
+        <div
+          ref={passCardRef}
+          className="rounded-3xl p-6 md:p-8 space-y-5 max-w-md mx-auto"
+          style={{
+            background: "linear-gradient(135deg, hsl(270 80% 8% / 0.98), hsl(280 60% 12% / 0.98))",
+            border: "1px solid hsl(270 60% 30% / 0.6)",
+            boxShadow: "0 0 30px hsl(270 100% 60% / 0.15), inset 0 0 30px hsl(270 100% 60% / 0.05)",
+          }}
+        >
+          {/* Logo inside card */}
+          <div className="text-center">
+            <img src={roninLogo} alt="Ronin Rhythm" className="w-36 mx-auto" />
+          </div>
 
-          {/* User */}
+          {/* Top divider */}
+          <div
+            className="h-px w-full"
+            style={{ background: "linear-gradient(90deg, transparent, hsl(270 100% 60%), transparent)" }}
+          />
+
+          {/* Avatar + Name */}
           <div className="text-center">
             <img
               src={avatarSrc}
               alt={userData.name}
-              className="w-20 h-20 md:w-24 md:h-24 rounded-full mx-auto mb-4 border-2 border-purple-500/50 neon-glow object-cover"
+              className="w-20 h-20 md:w-24 md:h-24 rounded-full mx-auto mb-3 border-2 border-purple-500/50 object-cover"
+              style={{ boxShadow: "0 0 15px hsl(270 100% 60% / 0.5)" }}
             />
             <h2
-              className="text-lg md:text-xl text-chrome tracking-wide"
-              style={exoFont}
+              className="text-lg md:text-xl tracking-wide"
+              style={{
+                ...exoFont,
+                background: "linear-gradient(180deg, hsl(0 0% 90%), hsl(0 0% 60%), hsl(0 0% 85%), hsl(0 0% 50%))",
+                WebkitBackgroundClip: "text",
+                WebkitTextFillColor: "transparent",
+                backgroundClip: "text",
+              }}
             >
               {userData.name.toUpperCase()}
             </h2>
-            <p className="text-xs md:text-sm text-muted-foreground font-poppins">
+            <p className="text-xs text-purple-300/70 font-poppins mt-1">
               {userData.email}
             </p>
           </div>
 
-          {/* ID */}
+          {/* Unique ID */}
           <div className="text-center">
-            <p className="text-xs text-muted-foreground mb-2 font-poppins tracking-wide">
+            <p className="text-xs text-purple-300/60 mb-1 font-poppins tracking-widest">
               UNIQUE ID
             </p>
             <p
-              className="text-xl md:text-2xl text-accent tracking-wider"
-              style={exoFont}
+              className="text-xl md:text-2xl tracking-wider"
+              style={{ ...exoFont, color: "hsl(270 100% 70%)" }}
             >
               {userData.id}
             </p>
           </div>
 
-          {/* QR */}
+          {/* QR Code */}
           <div className="flex justify-center">
             <div
-              ref={qrRef}
               style={{
                 background: "#ffffff",
                 padding: "12px",
@@ -227,56 +242,65 @@ const Pass = () => {
             </div>
           </div>
 
+          {/* Bottom divider */}
+          <div
+            className="h-px w-full"
+            style={{ background: "linear-gradient(90deg, transparent, hsl(270 100% 60%), transparent)" }}
+          />
+
           {/* Details */}
-          <div className="text-foreground space-y-2 font-poppins text-sm">
-            <p>
-              <span className="text-accent" style={exoFont}>Dance:</span>{" "}
+          <div className="space-y-2 text-sm font-poppins">
+            <p style={{ color: "hsl(270 30% 85%)" }}>
+              <span style={{ ...exoFont, color: "hsl(270 100% 70%)" }}>Dance: </span>
               {userData.danceStyle}
             </p>
-            <p>
-              <span className="text-accent" style={exoFont}>Phone:</span>{" "}
+            <p style={{ color: "hsl(270 30% 85%)" }}>
+              <span style={{ ...exoFont, color: "hsl(270 100% 70%)" }}>Phone: </span>
               {userData.phone}
             </p>
-            <p className="text-purple-400 text-xs tracking-wider" style={exoFont}>
+            <p className="text-xs tracking-wider" style={{ ...exoFont, color: "hsl(270 80% 70%)" }}>
               {userData.perks}
             </p>
           </div>
 
-          {/* Buttons */}
-          <div className="space-y-3">
-            <button
-              onClick={() => navigate("/home")}
-              className="w-full py-3 rounded-xl text-lg tracking-wider text-white transition-all duration-300 hover:scale-105"
-              style={{
-                ...exoFont,
-                background: "rgba(180, 80, 255, 0.25)",
-                backdropFilter: "blur(20px)",
-                border: "1.5px solid hsl(270 100% 60% / 0.6)",
-                boxShadow: "0 0 30px hsl(270 100% 60% / 0.5), 0 0 60px hsl(270 100% 60% / 0.35)",
-              }}
-            >
-              Enter The Arena
-            </button>
-
-            <button
-              onClick={downloadQRCode}
-              className="w-full py-3 rounded-xl text-lg tracking-wider text-white transition-all duration-300 hover:scale-105"
-              style={{
-                ...exoFont,
-                background: "rgba(50, 200, 120, 0.25)",
-                backdropFilter: "blur(20px)",
-                border: "1.5px solid rgba(50,200,120,0.6)",
-                boxShadow: "0 0 30px rgba(50,200,120,0.5), 0 0 60px rgba(50,200,120,0.35)",
-              }}
-            >
-              Download QR Code
-            </button>
-          </div>
+          {/* Card footer */}
+          <p className="text-center text-xs font-poppins tracking-wide" style={{ color: "hsl(270 20% 55%)" }}>
+            Show this pass at entry • Scan QR to verify
+          </p>
         </div>
+        {/* ===== END PASS CARD ===== */}
 
-        <p className="text-center text-muted-foreground mt-6 text-xs md:text-sm font-poppins tracking-wide">
-          Show this pass at entry • Scan QR to verify
-        </p>
+        {/* Buttons — outside card, not captured in download */}
+        <div className="space-y-3 max-w-md mx-auto mt-6">
+          <button
+            onClick={() => navigate("/home")}
+            className="w-full py-3 rounded-xl text-lg tracking-wider text-white transition-all duration-300 hover:scale-105"
+            style={{
+              ...exoFont,
+              background: "rgba(180, 80, 255, 0.25)",
+              backdropFilter: "blur(20px)",
+              border: "1.5px solid hsl(270 100% 60% / 0.6)",
+              boxShadow: "0 0 30px hsl(270 100% 60% / 0.5), 0 0 60px hsl(270 100% 60% / 0.35)",
+            }}
+          >
+            Enter The Arena
+          </button>
+
+          <button
+            onClick={downloadPass}
+            disabled={isDownloading}
+            className="w-full py-3 rounded-xl text-lg tracking-wider text-white transition-all duration-300 hover:scale-105 disabled:opacity-60 disabled:cursor-not-allowed"
+            style={{
+              ...exoFont,
+              background: "rgba(50, 200, 120, 0.25)",
+              backdropFilter: "blur(20px)",
+              border: "1.5px solid rgba(50,200,120,0.6)",
+              boxShadow: "0 0 30px rgba(50,200,120,0.5), 0 0 60px rgba(50,200,120,0.35)",
+            }}
+          >
+            {isDownloading ? "Generating..." : "Download Pass"}
+          </button>
+        </div>
       </div>
     </div>
   );
