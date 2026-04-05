@@ -120,7 +120,7 @@ const Pass = () => {
     );
   }
  
-  const exoFont = { fontFamily: "'ExoExtraBoldItalic', 'Exo', sans-serif" };
+  const exoFont = { fontFamily: "'Exo', sans-serif", fontWeight: 800, fontStyle: "italic" };
  
   return (
     <div className="relative min-h-screen flex items-center justify-center overflow-hidden py-12">
